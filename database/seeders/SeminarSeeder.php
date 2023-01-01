@@ -22,7 +22,7 @@ class SeminarSeeder extends Seeder
                     'thesis_id' => 1,
                     'name' => 'Seminar Proposal Tugas Akhir',
                     'date' => '2022-12-10',
-                    'time' => '14.00',
+                    'time' => '14:00:00',
                     'location_id' => 1,
                     'semester' => 'Ganjil 2022/2023',
                     'status' => 'Scheduled',

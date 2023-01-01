@@ -22,6 +22,7 @@ class SeminarController extends Controller
             foreach ($seminars as $index => $seminar) {
                 $data[$index] = [
                     'id' => $seminar->id,
+                    'register_date' => $seminar->register_date,
                     'date' => $seminar->date,
                     'name' => $seminar->thesis->student->name,
                     'title' => $seminar->thesis->title,
@@ -90,7 +91,7 @@ class SeminarController extends Controller
         $student = [
             'name' => $key->thesis->student->name,
             'nim' => $key->thesis->student_id,
-            'phone' => $key->thesis->phone,
+            'phone' => $key->thesis->student->phone,
             'status' => $key->thesis->student->status,
         ];
         foreach ($key->thesis->lecturers as $index => $supervisor) {
