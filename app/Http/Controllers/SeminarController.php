@@ -17,12 +17,12 @@ class SeminarController extends Controller
     public function index(Request $request)
     {
         if ($request->status) {
-            $seminars = Seminar::where('status', $request->status)->orderBy('register_date', 'DESC')->get();
+            $seminars = Seminar::where('name', $request->name)->where('status', $request->status)->orderBy('date', 'DESC')->get();
             $data = [];
             foreach ($seminars as $index => $seminar) {
                 $data[$index] = [
                     'id' => $seminar->id,
-                    'register_date' => $seminar->register_date,
+                    'date' => $seminar->date,
                     'name' => $seminar->thesis->student->name,
                     'title' => $seminar->thesis->title,
                 ];
@@ -36,12 +36,12 @@ class SeminarController extends Controller
 
             return response()->json($response, Response::HTTP_OK);
         } else {
-            $seminars = Seminar::orderBy('register_date', 'DESC')->get();
+            $seminars = Seminar::where('name', $request->name)->orderBy('date', 'DESC')->get();
             $data = [];
             foreach ($seminars as $index => $seminar) {
                 $data[$index] = [
                     'id' => $seminar->id,
-                    'register_date' => $seminar->register_date,
+                    'date' => $seminar->date,
                     'name' => $seminar->thesis->student->name,
                     'title' => $seminar->thesis->title,
                 ];
@@ -90,6 +90,7 @@ class SeminarController extends Controller
         $student = [
             'name' => $key->thesis->student->name,
             'nim' => $key->thesis->student_id,
+            'phone' => $key->thesis->phone,
             'status' => $key->thesis->student->status,
         ];
         foreach ($key->thesis->lecturers as $index => $supervisor) {

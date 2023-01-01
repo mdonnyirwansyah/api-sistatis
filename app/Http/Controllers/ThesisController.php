@@ -127,6 +127,7 @@ class ThesisController extends Controller
         $student = [
             'name' => $key->student->name,
             'nim' => $key->student_id,
+            'phone' => $key->phone,
             'status' => $key->student->status,
         ];
         foreach ($key->lecturers as $index => $supervisor) {
