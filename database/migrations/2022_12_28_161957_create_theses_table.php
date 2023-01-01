@@ -16,7 +16,7 @@ class CreateThesesTable extends Migration
         Schema::create('theses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->date('date_register');
+            $table->date('register_date');
             $table->string('title');
             $table->foreignId('field_id')->nullable()->constrained('fields', 'id')->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();

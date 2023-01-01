@@ -64,7 +64,7 @@ class FieldController extends Controller
     public function lecturers(Field $field)
     {
         $data = [];
-        foreach ($field->lecturers as $index => $lecturer) {
+        foreach ($field->lecturers->where('status', 'Aktif') as $index => $lecturer) {
             $data[$index] = [
                 'id' => $lecturer->id,
                 'name' => $lecturer->name,

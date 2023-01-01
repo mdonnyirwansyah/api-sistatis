@@ -15,15 +15,16 @@ class CreateSeminarsTable extends Migration
     {
         Schema::create('seminars', function (Blueprint $table) {
             $table->id();
-            $table->date('date_register');
+            $table->date('register_date');
             $table->foreignId('thesis_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->enum('name', ['Seminar Proposal Tugas Akhir', 'Seminar Hasil Tugas Akhir', 'Sidang Tugas Akhir']);
-            $table->date('date');
-            $table->time('time');
-            $table->foreignId('location_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->date('date')->nullable();
+            $table->time('time')->nullable();
+            $table->foreignId('location_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('semester');
-            $table->string('url_file_undangan');
-            $table->string('url_file_berita_acara');
+            $table->enum('status', ['Registered', 'Scheduled', 'Validated']);
+            $table->string('url_file_undangan')->nullable();
+            $table->string('url_file_berita_acara')->nullable();
             $table->timestamps();
         });
     }

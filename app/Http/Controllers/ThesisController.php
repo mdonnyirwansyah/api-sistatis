@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Imports\ThesisImport;
+use App\Models\Student;
 use App\Models\Thesis;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,12 +21,12 @@ class ThesisController extends Controller
      */
     public function index()
     {
-        $theses = Thesis::orderBy('date_register', 'DESC')->get();
+        $theses = Thesis::orderBy('register_date', 'DESC')->get();
         $data = [];
         foreach ($theses as $index => $thesis) {
             $data[$index] = [
                 'id' => $thesis->id,
-                'date_register' => $thesis->date_register,
+                'register_date' => $thesis->register_date,
                 'nim' => $thesis->student_id,
                 'name' => $thesis->student->name,
                 'title' => $thesis->title,
@@ -59,7 +62,57 @@ class ThesisController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'nim' => ['required'],
+            'name' => ['required'],
+            'phone' => ['required'],
+            'register_date' => ['required'],
+            'title' => ['required'],
+            'field' => ['required'],
+            'supervisors' => ['required']
+        ]);
+
+        if($validator->fails()) {
+            $errors = $validator->errors();
+            $response = [
+                'code'=> '422',
+                'status'=> 'Unprocessable Content',
+                'data'=> $errors
+            ];
+            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            DB::transaction(function() use($request) {
+                Student::create([
+                    'id' => $request->nim,
+                    'name' => $request->name,
+                    'phone' => $request->phone,
+                    'status' => 'Thesis Registered'
+                ]);
+
+                $thesis = Thesis::create([
+                    'student_id' => $request->nim,
+                    'register_date' => $request->register_date,
+                    'title' => $request->title,
+                    'field_id' => $request->field
+                ]);
+
+                $thesis->lecturers()->sync($request->supervisors);
+
+                $response = [
+                    'code'=> '200',
+                    'status'=> 'OK',
+                    'data'=> $thesis
+                ];
+
+                return response()->json($response, Response::HTTP_CREATED);
+            });
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => 'Failed '. $e->errorInfo
+            ]);
+        }
     }
 
     /**
@@ -85,7 +138,7 @@ class ThesisController extends Controller
         $status_supervisors = array_column($supervisors, 'status');
         array_multisort($status_supervisors, SORT_ASC, $supervisors);
         $thesis = [
-            'date_register' => $key->date_register,
+            'register_date' => $key->register_date,
             'title' => $key->title,
             'field' => $key->field->name,
             'supervisors' => $supervisors
@@ -101,12 +154,12 @@ class ThesisController extends Controller
             $status_examiners = array_column($examiners, 'status');
             array_multisort($status_examiners, SORT_ASC, $examiners);
             $seminars[$index] = [
-                'date_register' => $seminar->date_register,
+                'register_date' => $seminar->register_date,
                 'status' => $seminar->status,
                 'name' => $seminar->name,
                 'date' => $seminar->date,
                 'time' => $seminar->time,
-                'location' => $seminar->location->name,
+                'location' => $seminar->location_id ? $seminar->location->name : null,
                 'examiners' => $examiners,
                 'semester' => $seminar->semester
             ];

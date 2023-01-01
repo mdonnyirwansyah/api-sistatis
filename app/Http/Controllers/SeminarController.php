@@ -4,17 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Models\Seminar;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class SeminarController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        if ($request->status) {
+            $seminars = Seminar::where('status', $request->status)->orderBy('register_date', 'DESC')->get();
+            $data = [];
+            foreach ($seminars as $index => $seminar) {
+                $data[$index] = [
+                    'id' => $seminar->id,
+                    'register_date' => $seminar->register_date,
+                    'name' => $seminar->thesis->student->name,
+                    'title' => $seminar->thesis->title,
+                ];
+            }
+
+            $response = [
+                'code'=> '200',
+                'status'=> 'OK',
+                'data'=> $data
+            ];
+
+            return response()->json($response, Response::HTTP_OK);
+        } else {
+            $seminars = Seminar::orderBy('register_date', 'DESC')->get();
+            $data = [];
+            foreach ($seminars as $index => $seminar) {
+                $data[$index] = [
+                    'id' => $seminar->id,
+                    'register_date' => $seminar->register_date,
+                    'name' => $seminar->thesis->student->name,
+                    'title' => $seminar->thesis->title,
+                ];
+            }
+
+            $response = [
+                'code'=> '200',
+                'status'=> 'OK',
+                'data'=> $data
+            ];
+
+            return response()->json($response, Response::HTTP_OK);
+        }
     }
 
     /**
@@ -46,7 +86,60 @@ class SeminarController extends Controller
      */
     public function show(Seminar $seminar)
     {
-        //
+        $key = $seminar;
+        $student = [
+            'name' => $key->thesis->student->name,
+            'nim' => $key->thesis->student_id,
+            'status' => $key->thesis->student->status,
+        ];
+        foreach ($key->thesis->lecturers as $index => $supervisor) {
+            $supervisors[$index] = [
+                'name' => $supervisor->name,
+                'status' => $supervisor->pivot->status
+            ];
+        }
+        $status_supervisors = array_column($supervisors, 'status');
+        array_multisort($status_supervisors, SORT_ASC, $supervisors);
+        $thesis = [
+            'register_date' => $key->thesis->register_date,
+            'title' => $key->thesis->title,
+            'field' => $key->thesis->field->name,
+            'supervisors' => $supervisors
+        ];
+
+        foreach ($key->lecturers as $index => $examiner) {
+            $examiners[$index] = [
+                'name' => $examiner->name,
+                'status' => $examiner->pivot->status
+            ];
+        }
+        $status_examiners = array_column($examiners, 'status');
+        array_multisort($status_examiners, SORT_ASC, $examiners);
+        $seminar = [
+            'register_date' => $key->register_date,
+            'status' => $key->status,
+            'name' => $key->name,
+            'date' => $key->date,
+            'time' => $key->time,
+            'location' => $key->location_id ? $key->location->name : null,
+            'examiners' => $examiners,
+            'semester' => $key->semester
+        ];
+
+        $data = [
+            'id' => $key->id,
+            'student' => $student,
+            'thesis' => $thesis,
+            'seminar' => $seminar
+        ];
+
+        $response = [
+            'code'=> '200',
+            'status'=> 'OK',
+            'data'=> $data
+        ];
+
+        return response()->json($response, Response::HTTP_OK);
     }
 
     /**

@@ -39,7 +39,7 @@ class LecturerImport implements ToCollection
                     'name' => $row[1],
                     'nip' => $row[0],
                     'major' => $row[2],
-                    'status' => ucwords($row[3])
+                    'status' => $row[3]
                 ]);
 
                 $lecturer->fields()->sync($lecturerables);

@@ -28,4 +28,12 @@ class Seminar extends Model
     {
         return $this->belongsTo(Location::class);
     }
+
+    /**
+     * Get the thesis that owns the seminar.
+     */
+    public function thesis()
+    {
+        return $this->belongsTo(Thesis::class);
+    }
 }

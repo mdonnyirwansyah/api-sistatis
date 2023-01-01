@@ -35,7 +35,7 @@ class ThesisImport implements ToCollection
 
                     $thesis = Thesis::create([
                         'student_id' => $row[1],
-                        'date_register' => $row[0],
+                        'register_date' => $row[0],
                         'title' => $row[4],
                         'field_id' => $row[5]
                     ]);

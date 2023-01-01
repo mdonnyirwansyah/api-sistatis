@@ -14,11 +14,9 @@ class CreateLecturerables extends Migration
     public function up()
     {
         Schema::create('lecturerables', function (Blueprint $table) {
-            $table->bigInteger('lecturer_id');
-            $table->bigInteger('lecturerable_id');
-            $table->string('lecturerable_type');
+            $table->foreignId('lecturer_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->morphs('lecturerable');
             $table->enum('status', ['Utama', 'Pilihan', 'Pembimbing 1', 'Pembimbing 2', 'Penguji 1', 'Penguji 2', 'Penguji 3']);
-            $table->timestamps();
         });
     }
 
