@@ -19,8 +19,8 @@ class ThesisSeeder extends Seeder
         $theses = array(
             0 => array(
                 'student' => array(
-                    'id' => 1507113091,
                     'name' => 'Nelson Yuli Chandra',
+                    'nim' => '1507113091',
                     'phone' => '082169982041',
                 ),
                 'thesis' => array(
@@ -29,11 +29,11 @@ class ThesisSeeder extends Seeder
                     'field_id' => 1,
                     'supervisors' => array(
                         0 => array(
-                            'lecturer_id' => 196708171995121001,
+                            'lecturer_id' => 1,
                             'status' => 'Pembimbing 1'
                         ),
                         1 => array(
-                            'lecturer_id' => 196806251995121001,
+                            'lecturer_id' => 3,
                             'status' => 'Pembimbing 2'
                         ),
                     )
@@ -41,8 +41,8 @@ class ThesisSeeder extends Seeder
             ),
             1 => array(
                 'student' => array(
-                    'id' => 1307114726,
                     'name' => 'David Imannuel',
+                    'nim' => '1307114726',
                     'phone' => '085373920424',
                 ),
                 'thesis' => array(
@@ -51,11 +51,11 @@ class ThesisSeeder extends Seeder
                     'field_id' => 2,
                     'supervisors' => array(
                         0 => array(
-                            'lecturer_id' => 197308301999031001,
+                            'lecturer_id' => 2,
                             'status' => 'Pembimbing 1'
                         ),
                         1 => array(
-                            'lecturer_id' => 196804131998031002,
+                            'lecturer_id' => 6,
                             'status' => 'Pembimbing 2'
                         ),
                     )
@@ -65,15 +65,15 @@ class ThesisSeeder extends Seeder
 
         foreach ($theses as $thesis) {
             DB::transaction(function() use($thesis) {
-                Student::create([
-                    'id' => $thesis['student']['id'],
+                $student = Student::create([
                     'name' => $thesis['student']['name'],
+                    'nim' => $thesis['student']['nim'],
                     'phone' => $thesis['student']['phone'],
                     'status' => 'Tugas Akhir'
                 ]);
 
                 $created = Thesis::create([
-                    'student_id' => $thesis['student']['id'],
+                    'student_id' => $student->id,
                     'register_date' => $thesis['thesis']['register_date'],
                     'title' => $thesis['thesis']['title'],
                     'field_id' => $thesis['thesis']['field_id']

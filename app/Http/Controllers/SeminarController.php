@@ -16,13 +16,31 @@ class SeminarController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->status) {
-            $seminars = Seminar::where('name', $request->name)->where('status', $request->status)->orderBy('date', 'DESC')->get();
+        if ($request->status == 'Registered') {
+            $seminars = Seminar::where('name', $request->name)->where('status', $request->status)->orderBy('register_date', 'DESC')->get();
             $data = [];
             foreach ($seminars as $index => $seminar) {
                 $data[$index] = [
                     'id' => $seminar->id,
                     'register_date' => $seminar->register_date,
+                    'name' => $seminar->thesis->student->name,
+                    'title' => $seminar->thesis->title,
+                ];
+            }
+
+            $response = [
+                'code'=> '200',
+                'status'=> 'OK',
+                'data'=> $data
+            ];
+
+            return response()->json($response, Response::HTTP_OK);
+        } else if ($request->status == 'Scheduled') {
+            $seminars = Seminar::where('name', $request->name)->where('status', $request->status)->orderBy('date', 'DESC')->get();
+            $data = [];
+            foreach ($seminars as $index => $seminar) {
+                $data[$index] = [
+                    'id' => $seminar->id,
                     'date' => $seminar->date,
                     'name' => $seminar->thesis->student->name,
                     'title' => $seminar->thesis->title,
@@ -89,13 +107,15 @@ class SeminarController extends Controller
     {
         $key = $seminar;
         $student = [
+            'id' => $key->thesis->student->id,
             'name' => $key->thesis->student->name,
-            'nim' => $key->thesis->student_id,
+            'nim' => $key->thesis->student->nim,
             'phone' => $key->thesis->student->phone,
             'status' => $key->thesis->student->status,
         ];
         foreach ($key->thesis->lecturers as $index => $supervisor) {
             $supervisors[$index] = [
+                'id' => $supervisor->id,
                 'name' => $supervisor->name,
                 'status' => $supervisor->pivot->status
             ];
@@ -103,14 +123,17 @@ class SeminarController extends Controller
         $status_supervisors = array_column($supervisors, 'status');
         array_multisort($status_supervisors, SORT_ASC, $supervisors);
         $thesis = [
+            'id' => $key->thesis->id,
             'register_date' => $key->thesis->register_date,
             'title' => $key->thesis->title,
+            'field_id' => $key->thesis->field->id,
             'field' => $key->thesis->field->name,
             'supervisors' => $supervisors
         ];
 
         foreach ($key->lecturers as $index => $examiner) {
             $examiners[$index] = [
+                'id' => $examiner->id,
                 'name' => $examiner->name,
                 'status' => $examiner->pivot->status
             ];

@@ -27,7 +27,7 @@ class ThesisController extends Controller
             $data[$index] = [
                 'id' => $thesis->id,
                 'register_date' => $thesis->register_date,
-                'nim' => $thesis->student_id,
+                'nim' => $thesis->student->nim,
                 'name' => $thesis->student->name,
                 'title' => $thesis->title,
                 'status' => $thesis->student->status
@@ -45,16 +45,6 @@ class ThesisController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -69,6 +59,8 @@ class ThesisController extends Controller
             'register_date' => ['required'],
             'title' => ['required'],
             'field' => ['required'],
+            'supervisor_1' => ['required'],
+            'supervisor_2' => ['required'],
             'supervisors' => ['required']
         ]);
 
@@ -82,37 +74,34 @@ class ThesisController extends Controller
             return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        try {
-            DB::transaction(function() use($request) {
-                Student::create([
-                    'id' => $request->nim,
-                    'name' => $request->name,
-                    'phone' => $request->phone,
-                    'status' => 'Thesis Registered'
-                ]);
-
-                $thesis = Thesis::create([
-                    'student_id' => $request->nim,
-                    'register_date' => $request->register_date,
-                    'title' => $request->title,
-                    'field_id' => $request->field
-                ]);
-
-                $thesis->lecturers()->sync($request->supervisors);
-
-                $response = [
-                    'code'=> '200',
-                    'status'=> 'OK',
-                    'data'=> $thesis
-                ];
-
-                return response()->json($response, Response::HTTP_CREATED);
+        DB::transaction(function() use($request) {
+            $supervisors = collect($request->input('supervisors', []))->map(function ($supervisor) {
+                return ['status' => $supervisor];
             });
-        } catch (QueryException $e) {
-            return response()->json([
-                'message' => 'Failed '. $e->errorInfo
+
+            $student = Student::create([
+                'name' => $request->name,
+                'nim' => $request->nim,
+                'phone' => $request->phone,
+                'status' => 'Tugas Akhir'
             ]);
-        }
+
+            $thesis = Thesis::create([
+                'student_id' => $student->id,
+                'register_date' => $request->register_date,
+                'title' => $request->title,
+                'field_id' => $request->field
+            ]);
+
+            $thesis->lecturers()->sync($supervisors);
+        });
+
+        $response = [
+            'code'=> '201',
+            'status'=> 'Created'
+        ];
+
+        return response()->json($response, Response::HTTP_CREATED);
     }
 
     /**
@@ -125,13 +114,15 @@ class ThesisController extends Controller
     {
         $key = $thesis;
         $student = [
+            'id' => $key->student->id,
             'name' => $key->student->name,
-            'nim' => $key->student_id,
+            'nim' => $key->student->nim,
             'phone' => $key->student->phone,
             'status' => $key->student->status,
         ];
         foreach ($key->lecturers as $index => $supervisor) {
             $supervisors[$index] = [
+                'id' => $supervisor->id,
                 'name' => $supervisor->name,
                 'status' => $supervisor->pivot->status
             ];
@@ -141,6 +132,7 @@ class ThesisController extends Controller
         $thesis = [
             'register_date' => $key->register_date,
             'title' => $key->title,
+            'field_id' => $key->field->id,
             'field' => $key->field->name,
             'supervisors' => $supervisors
         ];
@@ -148,6 +140,7 @@ class ThesisController extends Controller
         foreach ($key->seminars as $index => $seminar) {
             foreach ($seminar->lecturers as $index1 => $examiner) {
                 $examiners[$index1] = [
+                    'id' => $examiner->id,
                     'name' => $examiner->name,
                     'status' => $examiner->pivot->status
                 ];
@@ -155,6 +148,7 @@ class ThesisController extends Controller
             $status_examiners = array_column($examiners, 'status');
             array_multisort($status_examiners, SORT_ASC, $examiners);
             $seminars[$index] = [
+                'id' => $examiner->id,
                 'register_date' => $seminar->register_date,
                 'status' => $seminar->status,
                 'name' => $seminar->name,
@@ -183,17 +177,6 @@ class ThesisController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Thesis  $thesis
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Thesis $thesis)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -202,7 +185,56 @@ class ThesisController extends Controller
      */
     public function update(Request $request, Thesis $thesis)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'nim' => ['required'],
+            'name' => ['required'],
+            'phone' => ['required'],
+            'register_date' => ['required'],
+            'title' => ['required'],
+            'field' => ['required'],
+            'supervisor_1' => ['required'],
+            'supervisor_2' => ['required'],
+            'supervisors' => ['required']
+        ]);
+
+        if($validator->fails()) {
+            $errors = $validator->errors();
+            $response = [
+                'code'=> '422',
+                'status'=> 'Unprocessable Content',
+                'data'=> $errors
+            ];
+            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        DB::transaction(function() use($request, $thesis) {
+            $supervisors = collect($request->input('supervisors', []))->map(function ($supervisor) {
+                return ['status' => $supervisor];
+            });
+
+            $student = Student::find($thesis->student_id);
+
+            $student->update([
+                'name' => $request->name,
+                'nim' => $request->nim,
+                'phone' => $request->phone,
+            ]);
+
+            $thesis->update([
+                'register_date' => $request->register_date,
+                'title' => $request->title,
+                'field_id' => $request->field
+            ]);
+
+            $thesis->lecturers()->sync($supervisors);
+        });
+
+        $response = [
+            'code'=> '200',
+            'status'=> 'OK'
+        ];
+
+        return response()->json($response, Response::HTTP_OK);
     }
 
     /**
@@ -213,7 +245,21 @@ class ThesisController extends Controller
      */
     public function destroy(Thesis $thesis)
     {
-        //
+        $key = $thesis;
+        $thesis = Student::find($key->student_id);
+        $thesis->delete();
+
+        $data = [
+            'id' => $thesis->id
+        ];
+
+        $response = [
+            'code'=> '200',
+            'status'=> 'OK',
+            'data' => $data
+        ];
+
+        return response()->json($response, Response::HTTP_OK);
     }
 
     /**

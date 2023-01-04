@@ -24,19 +24,21 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 Route::prefix('field')->name('field.')->controller(FieldController::class)->group(function () {
     Route::get('', 'index')->name('index');
-    Route::get('{field}/lecturer', 'lecturers')->name('lecturers');
 });
 Route::prefix('location')->name('location.')->controller(LocationController::class)->group(function () {
     Route::get('', 'index')->name('index');
 });
 Route::prefix('lecturer')->name('lecturer.')->controller(LecturerController::class)->group(function () {
     Route::get('', 'index')->name('index');
+    Route::get('field', 'getLecturersByField')->name('getLecturersByField');
     Route::post('import', 'import')->name('import');
 });
 Route::prefix('thesis')->name('thesis.')->controller(ThesisController::class)->group(function () {
     Route::get('', 'index')->name('index');
     Route::get('{thesis}', 'show')->name('show');
     Route::post('', 'store')->name('store');
+    Route::put('{thesis}', 'update')->name('update');
+    Route::delete('{thesis}', 'destroy')->name('destroy');
     Route::post('import', 'import')->name('import');
 });
 Route::prefix('seminar')->name('seminar.')->controller(SeminarController::class)->group(function () {

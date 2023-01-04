@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Imports\LecturerImport;
 use App\Models\Lecturer;
+use App\Models\Field;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
@@ -144,5 +145,36 @@ class LecturerController extends Controller
            $failures = $e->failures();
            return response()->json($failures, Response::HTTP_UNPROCESSABLE_ENTITY);
        }
+   }
+
+   /**
+    * Display the specified resource.
+    *
+    * @param  \Illuminate\Http\Request  $request
+    * @return \Illuminate\Http\Response
+    */
+   public function getLecturersByField(Request $request)
+   {
+       $data = [];
+       if ($request->id) {
+           $field = Field::find($request->id);
+           foreach ($field->lecturers->where('status', 'Aktif') as $index => $lecturer) {
+               $data[$index] = [
+                   'id' => $lecturer->id,
+                   'name' => $lecturer->name,
+
+               ];
+           }
+           $name_data = array_column($data, 'name');
+           array_multisort($name_data, SORT_ASC, $data);
+       }
+
+       $response = [
+           'code'=> '200',
+           'status'=> 'OK',
+           'data'=> $data
+       ];
+
+       return response()->json($response, Response::HTTP_OK);
    }
 }

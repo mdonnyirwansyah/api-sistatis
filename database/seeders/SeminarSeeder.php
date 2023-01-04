@@ -28,15 +28,15 @@ class SeminarSeeder extends Seeder
                     'status' => 'Scheduled',
                     'examiners' => array(
                         0 => array(
-                            'lecturer_id' => 196907171998031002,
+                            'lecturer_id' => 4,
                             'status' => 'Penguji 1'
                         ),
                         1 => array(
-                            'lecturer_id' => 196804131998031002,
+                            'lecturer_id' => 6,
                             'status' => 'Penguji 2'
                         ),
                         2 => array(
-                            'lecturer_id' => 197308301999031001,
+                            'lecturer_id' => 2,
                             'status' => 'Penguji 3'
                         )
                     )
@@ -52,15 +52,15 @@ class SeminarSeeder extends Seeder
                     'status' => 'Registered',
                     'examiners' => array(
                         0 => array(
-                            'lecturer_id' => 198905012019031000,
+                            'lecturer_id' => 7,
                             'status' => 'Penguji 1'
                         ),
                         1 => array(
-                            'lecturer_id' => 196806251995121001,
+                            'lecturer_id' => 3,
                             'status' => 'Penguji 2'
                         ),
                         2 => array(
-                            'lecturer_id' => 196801271995121001,
+                            'lecturer_id' => 5,
                             'status' => 'Penguji 3'
                         )
                     )

@@ -56,34 +56,6 @@ class FieldController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Field  $field
-     * @return \Illuminate\Http\Response
-     */
-    public function lecturers(Field $field)
-    {
-        $data = [];
-        foreach ($field->lecturers->where('status', 'Aktif') as $index => $lecturer) {
-            $data[$index] = [
-                'id' => $lecturer->id,
-                'name' => $lecturer->name,
-
-            ];
-        }
-        $name_data = array_column($data, 'name');
-        array_multisort($name_data, SORT_ASC, $data);
-
-        $response = [
-            'code'=> '200',
-            'status'=> 'OK',
-            'data'=> $data
-        ];
-
-        return response()->json($response, Response::HTTP_OK);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\Field  $field
