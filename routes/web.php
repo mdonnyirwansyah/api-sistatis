@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SeminarController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::prefix('seminar')->name('seminar.')->controller(SeminarController::class)->group(function () {
+    Route::get('print/{seminar}', 'print')->name('print');
 });

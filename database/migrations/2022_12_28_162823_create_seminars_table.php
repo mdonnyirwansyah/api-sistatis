@@ -25,6 +25,7 @@ class CreateSeminarsTable extends Migration
             $table->enum('status', ['Registered', 'Scheduled', 'Validated']);
             $table->string('url_file_undangan')->nullable();
             $table->string('url_file_berita_acara')->nullable();
+            $table->date('validate_date')->nullable();
             $table->timestamps();
         });
     }

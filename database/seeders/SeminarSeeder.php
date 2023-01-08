@@ -18,14 +18,15 @@ class SeminarSeeder extends Seeder
     {
         $seminars = array(
             0 => array(
-                    'register_date' => '2022-09-10',
+                    'register_date' => '2022-12-01',
                     'thesis_id' => 1,
                     'name' => 'Seminar Proposal Tugas Akhir',
                     'date' => '2022-12-10',
                     'time' => '14:00:00',
                     'location_id' => 1,
                     'semester' => 'Ganjil 2022/2023',
-                    'status' => 'Scheduled',
+                    'status' => 'validated',
+                    'validate_date' => '2022-12-03',
                     'examiners' => array(
                         0 => array(
                             'lecturer_id' => 4,
@@ -50,6 +51,7 @@ class SeminarSeeder extends Seeder
                     'location_id' => null,
                     'semester' => 'Ganjil 2022/2023',
                     'status' => 'Registered',
+                    'validate_date' => null,
                     'examiners' => array(
                         0 => array(
                             'lecturer_id' => 7,
@@ -77,7 +79,8 @@ class SeminarSeeder extends Seeder
                     'time' => $seminar['time'],
                     'location_id' => $seminar['location_id'],
                     'semester' => $seminar['semester'],
-                    'status' => $seminar['status']
+                    'status' => $seminar['status'],
+                    'validate_date' => $seminar['validate_date']
                 ]);
 
                 $created->lecturers()->sync($seminar['examiners']);

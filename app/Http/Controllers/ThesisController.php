@@ -177,6 +177,68 @@ class ThesisController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function show_by_nim(Request $request)
+    {
+        $student = Student::where('nim', $request->nim)->first();
+
+        if (!$student) {
+            $data = [];
+
+            $response = [
+                'code'=> '404',
+                'status'=> 'Not Found',
+                'data'=> $data
+            ];
+
+            return response()->json($response, Response::HTTP_NOT_FOUND);
+        }
+
+        $key = $student;
+        $student = [
+            'id' => $key->id,
+            'name' => $key->name,
+            'nim' => $key->nim,
+            'phone' => $key->phone,
+            'status' => $key->status,
+        ];
+        foreach ($key->thesis->lecturers as $index => $supervisor) {
+            $supervisors[$index] = [
+                'id' => $supervisor->id,
+                'name' => $supervisor->name,
+                'status' => $supervisor->pivot->status
+            ];
+        }
+        $status_supervisors = array_column($supervisors, 'status');
+        array_multisort($status_supervisors, SORT_ASC, $supervisors);
+        $thesis = [
+            'register_date' => $key->thesis->register_date,
+            'title' => $key->thesis->title,
+            'field_id' => $key->thesis->field->id,
+            'field' => $key->thesis->field->name,
+            'supervisors' => $supervisors
+        ];
+
+        $data = [
+            'id' => $key->id,
+            'student' => $student,
+            'thesis' => $thesis
+        ];
+
+        $response = [
+            'code'=> '200',
+            'status'=> 'OK',
+            'data'=> $data
+        ];
+
+        return response()->json($response, Response::HTTP_OK);
+    }
+
+    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -245,18 +307,12 @@ class ThesisController extends Controller
      */
     public function destroy(Thesis $thesis)
     {
-        $key = $thesis;
-        $thesis = Student::find($key->student_id);
-        $thesis->delete();
-
-        $data = [
-            'id' => $thesis->id
-        ];
+        $student = Student::find($thesis->student_id);
+        $student->delete();
 
         $response = [
             'code'=> '200',
-            'status'=> 'OK',
-            'data' => $data
+            'status'=> 'OK'
         ];
 
         return response()->json($response, Response::HTTP_OK);
@@ -266,8 +322,8 @@ class ThesisController extends Controller
     * @param  \Illuminate\Http\Request  $request
     * @return \Illuminate\Http\Response
     */
-   public function import(Request $request)
-   {
+    public function import(Request $request)
+    {
        $validator = Validator::make($request->all(), [
            'file' => 'required',
        ]);

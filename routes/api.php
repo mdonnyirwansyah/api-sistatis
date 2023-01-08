@@ -30,11 +30,12 @@ Route::prefix('location')->name('location.')->controller(LocationController::cla
 });
 Route::prefix('lecturer')->name('lecturer.')->controller(LecturerController::class)->group(function () {
     Route::get('', 'index')->name('index');
-    Route::get('field', 'getLecturersByField')->name('getLecturersByField');
+    Route::get('field', 'get_lecturers_by_field')->name('get_lecturers_by_field');
     Route::post('import', 'import')->name('import');
 });
 Route::prefix('thesis')->name('thesis.')->controller(ThesisController::class)->group(function () {
     Route::get('', 'index')->name('index');
+    Route::get('show', 'show_by_nim')->name('show_by_nim');
     Route::get('{thesis}', 'show')->name('show');
     Route::post('', 'store')->name('store');
     Route::put('{thesis}', 'update')->name('update');
@@ -43,5 +44,8 @@ Route::prefix('thesis')->name('thesis.')->controller(ThesisController::class)->g
 });
 Route::prefix('seminar')->name('seminar.')->controller(SeminarController::class)->group(function () {
     Route::get('', 'index')->name('index');
+    Route::post('', 'store')->name('store');
     Route::get('{seminar}', 'show')->name('show');
+    Route::put('{seminar}', 'update')->name('update');
+    Route::delete('{seminar}', 'destroy')->name('destroy');
 });

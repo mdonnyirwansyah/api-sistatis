@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Seminar;
+use App\Models\Thesis;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
+use PDF;
 
 class SeminarController extends Controller
 {
@@ -77,16 +81,6 @@ class SeminarController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -94,7 +88,53 @@ class SeminarController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'register_date' => ['required'],
+            'examiner_1' => ['required'],
+            'examiner_2' => ['required'],
+            'examiner_3' => ['required'],
+            'examiners' => ['required'],
+            'semester' => ['required']
+        ]);
+
+        if($validator->fails()) {
+            $errors = $validator->errors();
+            $response = [
+                'code'=> '422',
+                'status'=> 'Unprocessable Content',
+                'data'=> $errors
+            ];
+            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        DB::transaction(function() use($request) {
+            $examiners = collect($request->input('examiners', []))->map(function ($examiner) {
+                return ['status' => $examiner];
+            });
+
+            $seminar = Seminar::create([
+                'thesis_id' => $request->thesis_id,
+                'name' => 'Seminar Proposal Tugas Akhir',
+                'register_date' => $request->register_date,
+                'semester' => $request->semester,
+                'status' => 'Registered'
+            ]);
+
+            $seminar->lecturers()->sync($examiners);
+
+            $thesis = Thesis::find($request->thesis_id);
+
+            $thesis->student->update([
+                'status' => 'Seminar Proposal Tugas Akhir'
+            ]);
+        });
+
+        $response = [
+            'code'=> '200',
+            'status'=> 'OK'
+        ];
+
+        return response()->json($response, Response::HTTP_OK);
     }
 
     /**
@@ -168,14 +208,52 @@ class SeminarController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Update the specified resource in storage.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Seminar  $seminar
      * @return \Illuminate\Http\Response
      */
-    public function edit(Seminar $seminar)
+    public function update(Request $request, Seminar $seminar)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'register_date' => ['required'],
+            'examiner_1' => ['required'],
+            'examiner_2' => ['required'],
+            'examiner_3' => ['required'],
+            'examiners' => ['required'],
+            'semester' => ['required']
+        ]);
+
+        if($validator->fails()) {
+            $errors = $validator->errors();
+            $response = [
+                'code'=> '422',
+                'status'=> 'Unprocessable Content',
+                'data'=> $errors
+            ];
+            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        DB::transaction(function() use($request, $seminar) {
+            $examiners = collect($request->input('examiners', []))->map(function ($examiner) {
+                return ['status' => $examiner];
+            });
+
+            $seminar->update([
+                'register_date' => $request->register_date,
+                'semester' => $request->semester,
+            ]);
+
+            $seminar->lecturers()->sync($examiners);
+        });
+
+        $response = [
+            'code'=> '200',
+            'status'=> 'OK'
+        ];
+
+        return response()->json($response, Response::HTTP_OK);
     }
 
     /**
@@ -185,7 +263,53 @@ class SeminarController extends Controller
      * @param  \App\Models\Seminar  $seminar
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Seminar $seminar)
+    public function schedule_update(Request $request, Seminar $seminar)
+    {
+        $validator = Validator::make($request->all(), [
+            'date' => ['required'],
+            'time' => ['required'],
+            'location' => ['required']
+        ]);
+
+        if($validator->fails()) {
+            $errors = $validator->errors();
+            $response = [
+                'code'=> '422',
+                'status'=> 'Unprocessable Content',
+                'data'=> $errors
+            ];
+            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        DB::transaction(function() use($request, $seminar) {
+            $examiners = collect($request->input('examiners', []))->map(function ($examiner) {
+                return ['status' => $examiner];
+            });
+
+            $seminar->update([
+                'date' => $request->date,
+                'time' => $request->time,
+                'location_id' => $request->location,
+                'status' => 'Scheduled',
+            ]);
+        });
+
+        $response = [
+            'code'=> '200',
+            'status'=> 'OK'
+        ];
+
+        return response()->json($response, Response::HTTP_OK);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Seminar  $seminar
+     * @return \Illuminate\Http\Response
+     */
+    public function validate_update(Request $request, Seminar $seminar)
     {
         //
     }
@@ -198,6 +322,86 @@ class SeminarController extends Controller
      */
     public function destroy(Seminar $seminar)
     {
-        //
+        DB::transaction(function () use($seminar) {
+            $seminar->delete();
+            $seminar->thesis->student->update([
+                'status' => 'Tugas Akhir'
+            ]);
+        });
+
+        $response = [
+            'code'=> '200',
+            'status'=> 'OK'
+        ];
+
+        return response()->json($response, Response::HTTP_OK);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Seminar  $seminar
+     * @return \Illuminate\Http\Response
+     */
+    public function print(Request $request, Seminar $seminar)
+    {
+        $key = $seminar;
+        $student = [
+            'id' => $key->thesis->student->id,
+            'name' => $key->thesis->student->name,
+            'nim' => $key->thesis->student->nim,
+            'phone' => $key->thesis->student->phone,
+            'status' => $key->thesis->student->status,
+        ];
+        foreach ($key->thesis->lecturers as $index => $supervisor) {
+            $supervisors[$index] = [
+                'id' => $supervisor->id,
+                'name' => $supervisor->name,
+                'status' => $supervisor->pivot->status
+            ];
+        }
+        $status_supervisors = array_column($supervisors, 'status');
+        array_multisort($status_supervisors, SORT_ASC, $supervisors);
+        $thesis = [
+            'id' => $key->thesis->id,
+            'register_date' => $key->thesis->register_date,
+            'title' => $key->thesis->title,
+            'field_id' => $key->thesis->field->id,
+            'field' => $key->thesis->field->name,
+            'supervisors' => $supervisors
+        ];
+
+        foreach ($key->lecturers as $index => $examiner) {
+            $examiners[$index] = [
+                'id' => $examiner->id,
+                'name' => $examiner->name,
+                'status' => $examiner->pivot->status
+            ];
+        }
+        $status_examiners = array_column($examiners, 'status');
+        array_multisort($status_examiners, SORT_ASC, $examiners);
+        $seminar = [
+            'register_date' => $key->register_date,
+            'status' => $key->status,
+            'validate_date' => date_format(new \DateTime($key->date), 'd M Y'),
+            'name' => $key->name,
+            'date' => date_format(new \DateTime($key->date), 'D / d M Y'),
+            'time' => date_format(new \DateTime($key->time), 'H:i'),
+            'location' => $key->location->name,
+            'examiners' => $examiners,
+            'semester' => $key->semester
+        ];
+
+        $data = [
+            'id' => $key->id,
+            'student' => $student,
+            'thesis' => $thesis,
+            'seminar' => $seminar
+        ];
+
+        $pdf = PDF::loadView('print.seminar-proposal', compact('data'))
+        ->setPaper('a4')->setOption('margin-top', '1cm')->setOption('margin-bottom', '1cm')->setOption('margin-left', '3cm')->setOption('margin-right', '3cm');
+
+        return $pdf->stream('report');
     }
 }
