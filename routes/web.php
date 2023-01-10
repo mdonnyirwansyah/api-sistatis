@@ -13,7 +13,3 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::prefix('seminar')->name('seminar.')->controller(SeminarController::class)->group(function () {
-    Route::get('print/{seminar}', 'print')->name('print');
-});

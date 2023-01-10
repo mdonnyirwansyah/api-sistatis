@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FieldController;
 use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\LocationController;
@@ -18,34 +19,42 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-Route::prefix('field')->name('field.')->controller(FieldController::class)->group(function () {
-    Route::get('', 'index')->name('index');
-});
-Route::prefix('location')->name('location.')->controller(LocationController::class)->group(function () {
-    Route::get('', 'index')->name('index');
-});
-Route::prefix('lecturer')->name('lecturer.')->controller(LecturerController::class)->group(function () {
-    Route::get('', 'index')->name('index');
-    Route::get('field', 'get_lecturers_by_field')->name('get_lecturers_by_field');
-    Route::post('import', 'import')->name('import');
-});
-Route::prefix('thesis')->name('thesis.')->controller(ThesisController::class)->group(function () {
-    Route::get('', 'index')->name('index');
-    Route::get('show', 'show_by_nim')->name('show_by_nim');
-    Route::get('{thesis}', 'show')->name('show');
-    Route::post('', 'store')->name('store');
-    Route::put('{thesis}', 'update')->name('update');
-    Route::delete('{thesis}', 'destroy')->name('destroy');
-    Route::post('import', 'import')->name('import');
-});
-Route::prefix('seminar')->name('seminar.')->controller(SeminarController::class)->group(function () {
-    Route::get('', 'index')->name('index');
-    Route::post('', 'store')->name('store');
-    Route::get('{seminar}', 'show')->name('show');
-    Route::put('{seminar}', 'update')->name('update');
-    Route::delete('{seminar}', 'destroy')->name('destroy');
+Route::post('auth/login', [AuthController::class, 'login']);
+Route::middleware(['auth:api'])->group(function () {
+    Route::prefix('auth')->controller(AuthController::class)->group(function () {
+        Route::post('logout', 'logout');
+        Route::post('refresh', 'refresh');
+        Route::post('me', 'me');
+    });
+    Route::prefix('field')->controller(FieldController::class)->group(function () {
+        Route::get('', 'index');
+    });
+    Route::prefix('location')->controller(LocationController::class)->group(function () {
+        Route::get('', 'index');
+    });
+    Route::prefix('lecturer')->controller(LecturerController::class)->group(function () {
+        Route::get('', 'index');
+        Route::get('field', 'get_lecturers_by_field');
+        Route::post('import', 'import');
+    });
+    Route::prefix('thesis')->controller(ThesisController::class)->group(function () {
+        Route::get('', 'index');
+        Route::get('filter', 'filter');
+        Route::get('show', 'show_by_nim');
+        Route::get('{thesis}', 'show');
+        Route::post('', 'store');
+        Route::put('{thesis}', 'update');
+        Route::delete('{thesis}', 'destroy');
+        Route::post('import', 'import');
+    });
+    Route::prefix('seminar')->controller(SeminarController::class)->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('{seminar}', 'show');
+        Route::put('{seminar}', 'update');
+        Route::put('schedule/{seminar}', 'schedule_update');
+        Route::put('validate/{seminar}', 'validate_update');
+        Route::delete('{seminar}', 'destroy');
+        Route::get('undangan/{seminar}', 'print');
+    });
 });

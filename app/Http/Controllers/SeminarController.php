@@ -282,10 +282,6 @@ class SeminarController extends Controller
         }
 
         DB::transaction(function() use($request, $seminar) {
-            $examiners = collect($request->input('examiners', []))->map(function ($examiner) {
-                return ['status' => $examiner];
-            });
-
             $seminar->update([
                 'date' => $request->date,
                 'time' => $request->time,
@@ -311,7 +307,27 @@ class SeminarController extends Controller
      */
     public function validate_update(Request $request, Seminar $seminar)
     {
-        //
+        if($seminar->status !== 'Scheduled') {
+            $response = [
+                'code'=> '422',
+                'status'=> 'Unprocessable Content',
+                'data'=> ["status" => 'Not scheduled!']
+            ];
+            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        DB::transaction(function() use($request, $seminar) {
+            $seminar->update([
+                'status' => 'Validated',
+            ]);
+        });
+
+        $response = [
+            'code'=> '200',
+            'status'=> 'OK'
+        ];
+
+        return response()->json($response, Response::HTTP_OK);
     }
 
     /**
@@ -343,8 +359,17 @@ class SeminarController extends Controller
      * @param  \App\Models\Seminar  $seminar
      * @return \Illuminate\Http\Response
      */
-    public function print(Request $request, Seminar $seminar)
+    public function print(Seminar $seminar)
     {
+        if($seminar->status !== 'Validated') {
+            $response = [
+                'code'=> '422',
+                'status'=> 'Unprocessable Content',
+                'data'=> ["status" => 'Not validated!']
+            ];
+            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $key = $seminar;
         $student = [
             'id' => $key->thesis->student->id,
@@ -399,9 +424,13 @@ class SeminarController extends Controller
             'seminar' => $seminar
         ];
 
+        $headers = array(
+            'Content-Type: application/pdf',
+        );
+
         $pdf = PDF::loadView('print.seminar-proposal', compact('data'))
         ->setPaper('a4')->setOption('margin-top', '1cm')->setOption('margin-bottom', '1cm')->setOption('margin-left', '3cm')->setOption('margin-right', '3cm');
 
-        return $pdf->stream('report');
+        return $pdf->download('undangan');
     }
 }

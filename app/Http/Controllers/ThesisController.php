@@ -31,7 +31,38 @@ class ThesisController extends Controller
                 'name' => $thesis->student->name,
                 'title' => $thesis->title,
                 'status' => $thesis->student->status
+            ];
+        }
 
+        $response = [
+            'code'=> '200',
+            'status'=> 'OK',
+            'data'=> $data
+        ];
+
+        return response()->json($response, Response::HTTP_OK);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function filter(Request $request)
+    {
+        $students = Student::with(['thesis' => function ($q) {
+            $q->orderBy('register_date', 'DESC');
+          }])->where('status', $request->status)->whereRelation('thesis', 'field_id', $request->field)->get();
+        $data = [];
+        foreach ($students as $index => $student) {
+            $data[$index] = [
+                'id' => $student->thesis->id,
+                'register_date' => $student->thesis->register_date,
+                'nim' => $student->nim,
+                'name' => $student->name,
+                'title' => $student->thesis->title,
+                'status' => $student->status
             ];
         }
 
