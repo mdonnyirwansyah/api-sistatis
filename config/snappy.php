@@ -36,7 +36,7 @@ return [
     'pdf' => [
         'enabled' => true,
         'binary' => base_path('vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64'),
-        'timeout' => false,
+        'timeout' => 3600,
         'options' => [],
         'env'     => [],
     ],
@@ -44,7 +44,7 @@ return [
     'image' => [
         'enabled' => true,
         'binary' => base_path('vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltoimage-amd64'),
-        'timeout' => false,
+        'timeout' => 3600,
         'options' => [],
         'env'     => [],
     ],

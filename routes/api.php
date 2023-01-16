@@ -6,6 +6,7 @@ use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ThesisController;
 use App\Http\Controllers\SeminarController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::post('auth/login', [AuthController::class, 'login']);
+Route::post('auth/login', [AuthController::class, 'login'])->name('login');
 Route::middleware(['auth:api'])->group(function () {
     Route::prefix('auth')->controller(AuthController::class)->group(function () {
         Route::post('logout', 'logout');
@@ -56,5 +57,8 @@ Route::middleware(['auth:api'])->group(function () {
         Route::put('validate/{seminar}', 'validate_update');
         Route::delete('{seminar}', 'destroy');
         Route::get('undangan/{seminar}', 'print');
+    });
+    Route::prefix('user')->controller(UserController::class)->group(function () {
+        Route::put('{user}', 'update');
     });
 });

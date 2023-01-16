@@ -424,13 +424,9 @@ class SeminarController extends Controller
             'seminar' => $seminar
         ];
 
-        $headers = array(
-            'Content-Type: application/pdf',
-        );
-
-        $pdf = PDF::loadView('print.seminar-proposal', compact('data'))
+        $pdf = PDF::loadView('pdf.undangan', compact('data'))
         ->setPaper('a4')->setOption('margin-top', '1cm')->setOption('margin-bottom', '1cm')->setOption('margin-left', '3cm')->setOption('margin-right', '3cm');
 
-        return $pdf->download('undangan');
+        return $pdf->download('undangan.pdf');
     }
 }
