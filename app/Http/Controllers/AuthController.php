@@ -61,7 +61,7 @@ class AuthController extends Controller
             'email' => auth()->user()->email
         ];
 
-        $cookie = $this->getCookie('jwt', $token);
+        $cookie = $this->getCookie('access_token', $token);
 
         $response = [
             'code'=> '200',
@@ -102,7 +102,7 @@ class AuthController extends Controller
     public function logout()
     {
         auth()->logout();
-        $cookie = \Cookie::forget('jwt');
+        $cookie = \Cookie::forget('access_token');
 
         return response()->json(['message' => 'Successfully logged out'])->withCookie($cookie);
     }

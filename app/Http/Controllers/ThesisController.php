@@ -92,7 +92,6 @@ class ThesisController extends Controller
             'field' => ['required'],
             'supervisor_1' => ['required'],
             'supervisor_2' => ['required'],
-            'supervisors' => ['required']
         ]);
 
         if($validator->fails()) {
@@ -106,9 +105,15 @@ class ThesisController extends Controller
         }
 
         DB::transaction(function() use($request) {
-            $supervisors = collect($request->input('supervisors', []))->map(function ($supervisor) {
-                return ['status' => $supervisor];
-            });
+            $supervisors = [];
+            $supervisors[0] = [
+                'lecturer_id' => $request->supervisor_1,
+                'status' => 'Pembimbing 1'
+            ];
+            $supervisors[1] = [
+                'lecturer_id' => $request->supervisor_2,
+                'status' => 'Pembimbing 2'
+            ];
 
             $student = Student::create([
                 'name' => $request->name,
@@ -286,8 +291,7 @@ class ThesisController extends Controller
             'title' => ['required'],
             'field' => ['required'],
             'supervisor_1' => ['required'],
-            'supervisor_2' => ['required'],
-            'supervisors' => ['required']
+            'supervisor_2' => ['required']
         ]);
 
         if($validator->fails()) {
@@ -301,9 +305,15 @@ class ThesisController extends Controller
         }
 
         DB::transaction(function() use($request, $thesis) {
-            $supervisors = collect($request->input('supervisors', []))->map(function ($supervisor) {
-                return ['status' => $supervisor];
-            });
+            $supervisors = [];
+            $supervisors[0] = [
+                'lecturer_id' => $request->supervisor_1,
+                'status' => 'Pembimbing 1'
+            ];
+            $supervisors[1] = [
+                'lecturer_id' => $request->supervisor_2,
+                'status' => 'Pembimbing 2'
+            ];
 
             $student = Student::find($thesis->student_id);
 

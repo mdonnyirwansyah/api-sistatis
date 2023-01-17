@@ -93,7 +93,6 @@ class SeminarController extends Controller
             'examiner_1' => ['required'],
             'examiner_2' => ['required'],
             'examiner_3' => ['required'],
-            'examiners' => ['required'],
             'semester' => ['required']
         ]);
 
@@ -108,9 +107,19 @@ class SeminarController extends Controller
         }
 
         DB::transaction(function() use($request) {
-            $examiners = collect($request->input('examiners', []))->map(function ($examiner) {
-                return ['status' => $examiner];
-            });
+            $examiners = [];
+            $examiners[0] = [
+                'lecturer_id' => $request->examiner_1,
+                'status' => 'Penguji 1'
+            ];
+            $examiners[1] = [
+                'lecturer_id' => $request->examiner_2,
+                'status' => 'Penguji 2'
+            ];
+            $examiners[2] = [
+                'lecturer_id' => $request->examiner_3,
+                'status' => 'Penguji 3'
+            ];
 
             $seminar = Seminar::create([
                 'thesis_id' => $request->thesis_id,
@@ -221,8 +230,7 @@ class SeminarController extends Controller
             'examiner_1' => ['required'],
             'examiner_2' => ['required'],
             'examiner_3' => ['required'],
-            'examiners' => ['required'],
-            'semester' => ['required']
+            'examiners' => ['required']
         ]);
 
         if($validator->fails()) {
@@ -236,9 +244,19 @@ class SeminarController extends Controller
         }
 
         DB::transaction(function() use($request, $seminar) {
-            $examiners = collect($request->input('examiners', []))->map(function ($examiner) {
-                return ['status' => $examiner];
-            });
+            $examiners = [];
+            $examiners[0] = [
+                'lecturer_id' => $request->examiner_1,
+                'status' => 'Penguji 1'
+            ];
+            $examiners[1] = [
+                'lecturer_id' => $request->examiner_2,
+                'status' => 'Penguji 2'
+            ];
+            $examiners[2] = [
+                'lecturer_id' => $request->examiner_3,
+                'status' => 'Penguji 3'
+            ];
 
             $seminar->update([
                 'register_date' => $request->register_date,
