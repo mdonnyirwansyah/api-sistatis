@@ -16,9 +16,9 @@ class FieldCollection extends ResourceCollection
     public function toArray($request)
     {
         return [
-            'code'=> '200',
-            'status'=> 'OK',
             'data' => FieldResource::collection($this->collection),
+            'code'=> '200',
+            'status'=> 'OK'
         ];
     }
 }
