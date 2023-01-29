@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Field;
-use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use App\Http\Resources\FieldCollection;
+use App\Http\Resources\FieldResource;
 
 class FieldController extends Controller
 {
@@ -16,21 +16,7 @@ class FieldController extends Controller
     public function index()
     {
         $fields = Field::orderBy('name', 'ASC')->get();
-        $data = [];
-        foreach ($fields as $index => $field) {
-            $data[$index] = [
-                'id' => $field->id,
-                'name' => $field->name,
 
-            ];
-        }
-
-        $response = [
-            'code'=> '200',
-            'status'=> 'OK',
-            'data'=> $data
-        ];
-
-        return response()->json($response, Response::HTTP_OK);
+        return new FieldCollection($fields);
     }
 }
