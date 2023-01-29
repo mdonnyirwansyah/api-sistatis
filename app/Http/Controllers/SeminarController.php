@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Seminar;
 use App\Models\Thesis;
+use App\Http\Requests\SeminarRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -83,29 +84,11 @@ class SeminarController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Requests\SeminarRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(SeminarRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'register_date' => ['required'],
-            'examiner_1' => ['required'],
-            'examiner_2' => ['required'],
-            'examiner_3' => ['required'],
-            'semester' => ['required']
-        ]);
-
-        if($validator->fails()) {
-            $errors = $validator->errors();
-            $response = [
-                'code'=> '422',
-                'status'=> 'Unprocessable Content',
-                'data'=> $errors
-            ];
-            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         DB::transaction(function() use($request) {
             $examiners = [];
             $examiners[0] = [
@@ -219,30 +202,12 @@ class SeminarController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Seminar  $seminar
+     * @param  \Illuminate\Http\Requests\SeminarRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Seminar $seminar)
+    public function update(SeminarRequest $request, Seminar $seminar)
     {
-        $validator = Validator::make($request->all(), [
-            'register_date' => ['required'],
-            'examiner_1' => ['required'],
-            'examiner_2' => ['required'],
-            'examiner_3' => ['required'],
-            'examiners' => ['required']
-        ]);
-
-        if($validator->fails()) {
-            $errors = $validator->errors();
-            $response = [
-                'code'=> '422',
-                'status'=> 'Unprocessable Content',
-                'data'=> $errors
-            ];
-            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         DB::transaction(function() use($request, $seminar) {
             $examiners = [];
             $examiners[0] = [
