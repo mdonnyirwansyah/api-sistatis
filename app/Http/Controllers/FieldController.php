@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Field;
 use App\Http\Resources\FieldCollection;
-use App\Http\Resources\FieldResource;
 
 class FieldController extends Controller
 {

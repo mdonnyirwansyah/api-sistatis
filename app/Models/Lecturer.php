@@ -18,7 +18,7 @@ class Lecturer extends Model
      */
     public function fields()
     {
-        return $this->morphedByMany(Field::class, 'lecturerable')->withPivot(['status']);;
+        return $this->morphedByMany(Field::class, 'lecturerable')->withPivot(['status'])->orderBy('status', 'ASC');
     }
 
     /**

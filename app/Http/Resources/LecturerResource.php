@@ -2,9 +2,10 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Resources\FieldResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class FieldResource extends JsonResource
+class LecturerResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,9 +18,9 @@ class FieldResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'status' => $this->whenPivotLoaded('lecturerables', function () {
-                return $this->pivot->status;
-            }),
+            'nip' => $this->nip,
+            'major' => $this->major,
+            'fields' => FieldResource::collection($this->whenLoaded('fields')),
         ];
     }
 }
