@@ -13,9 +13,6 @@ class Field extends Model
 
     protected $guarded = [];
 
-    /**
-     * The lecturers that belong to the field.
-     */
     public function lecturers()
     {
         return $this->morphToMany(Lecturer::class, 'lecturerable');

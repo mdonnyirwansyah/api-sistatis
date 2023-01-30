@@ -13,33 +13,21 @@ class Thesis extends Model
 
     protected $guarded = [];
 
-    /**
-     * Get the student that owns the thesis.
-     */
     public function student()
     {
         return $this->belongsTo(Student::class);
     }
 
-    /**
-     * Get the field that owns the thesis.
-     */
     public function field()
     {
         return $this->belongsTo(Field::class);
     }
 
-    /**
-     * The lecturers that belong to the thesis.
-     */
     public function lecturers()
     {
-        return $this->morphToMany(Lecturer::class, 'lecturerable')->withPivot(['status']);
+        return $this->morphToMany(Lecturer::class, 'lecturerable')->withPivot(['status'])->orderBy('status', 'ASC');
     }
 
-    /**
-     * Get the seminars for the thesis.
-     */
     public function seminars()
     {
         return $this->hasMany(Seminar::class);

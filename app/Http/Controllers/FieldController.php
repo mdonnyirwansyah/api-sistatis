@@ -7,11 +7,6 @@ use App\Http\Resources\FieldCollection;
 
 class FieldController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         $fields = Field::orderBy('name', 'ASC')->get();

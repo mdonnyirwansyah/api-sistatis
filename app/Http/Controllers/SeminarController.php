@@ -4,89 +4,42 @@ namespace App\Http\Controllers;
 
 use App\Models\Seminar;
 use App\Models\Thesis;
+use App\Http\Resources\SeminarCollection;
+use App\Http\Resources\SeminarResource;
 use App\Http\Requests\SeminarRequest;
+use App\Http\Requests\SeminarScheduleRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
-use Symfony\Component\HttpFoundation\Response;
 use PDF;
 
 class SeminarController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
-        if ($request->status == 'Registered') {
-            $seminars = Seminar::where('name', $request->name)->where('status', $request->status)->orderBy('register_date', 'DESC')->get();
-            $data = [];
-            foreach ($seminars as $index => $seminar) {
-                $data[$index] = [
-                    'id' => $seminar->id,
-                    'register_date' => $seminar->register_date,
-                    'name' => $seminar->thesis->student->name,
-                    'title' => $seminar->thesis->title,
-                ];
-            }
+        if ($request->status) {
+            $seminars = Seminar::with([
+                'thesis',
+                'thesis.student',
+            ])
+            ->where('name', $request->name)
+            ->where('status', $request->status)
+            ->orderBy('register_date', 'DESC')
+            ->get();
 
-            $response = [
-                'code'=> '200',
-                'status'=> 'OK',
-                'data'=> $data
-            ];
-
-            return response()->json($response, Response::HTTP_OK);
-        } else if ($request->status == 'Scheduled') {
-            $seminars = Seminar::where('name', $request->name)->where('status', $request->status)->orderBy('date', 'DESC')->get();
-            $data = [];
-            foreach ($seminars as $index => $seminar) {
-                $data[$index] = [
-                    'id' => $seminar->id,
-                    'date' => $seminar->date,
-                    'name' => $seminar->thesis->student->name,
-                    'title' => $seminar->thesis->title,
-                ];
-            }
-
-            $response = [
-                'code'=> '200',
-                'status'=> 'OK',
-                'data'=> $data
-            ];
-
-            return response()->json($response, Response::HTTP_OK);
+            return new SeminarCollection($seminars);
         } else {
-            $seminars = Seminar::where('name', $request->name)->orderBy('date', 'DESC')->get();
-            $data = [];
-            foreach ($seminars as $index => $seminar) {
-                $data[$index] = [
-                    'id' => $seminar->id,
-                    'date' => $seminar->date,
-                    'name' => $seminar->thesis->student->name,
-                    'title' => $seminar->thesis->title,
-                ];
-            }
+            $seminars = Seminar::with([
+                'thesis',
+                'thesis.student',
+            ])
+            ->where('name', $request->name)
+            ->orderBy('date', 'DESC')
+            ->get();
 
-            $response = [
-                'code'=> '200',
-                'status'=> 'OK',
-                'data'=> $data
-            ];
-
-            return response()->json($response, Response::HTTP_OK);
+            return new SeminarCollection($seminars);
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Requests\SeminarRequest  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(SeminarRequest $request)
     {
         DB::transaction(function() use($request) {
@@ -126,86 +79,29 @@ class SeminarController extends Controller
             'status'=> 'OK'
         ];
 
-        return response()->json($response, Response::HTTP_OK);
+        return response()->json($response, 200);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Seminar  $seminar
-     * @return \Illuminate\Http\Response
-     */
     public function show(Seminar $seminar)
     {
-        $key = $seminar;
-        $student = [
-            'id' => $key->thesis->student->id,
-            'name' => $key->thesis->student->name,
-            'nim' => $key->thesis->student->nim,
-            'phone' => $key->thesis->student->phone,
-            'status' => $key->thesis->student->status,
-        ];
-        foreach ($key->thesis->lecturers as $index => $supervisor) {
-            $supervisors[$index] = [
-                'id' => $supervisor->id,
-                'name' => $supervisor->name,
-                'status' => $supervisor->pivot->status
-            ];
-        }
-        $status_supervisors = array_column($supervisors, 'status');
-        array_multisort($status_supervisors, SORT_ASC, $supervisors);
-        $thesis = [
-            'id' => $key->thesis->id,
-            'register_date' => $key->thesis->register_date,
-            'title' => $key->thesis->title,
-            'field_id' => $key->thesis->field->id,
-            'field' => $key->thesis->field->name,
-            'supervisors' => $supervisors
-        ];
+        $seminar_id = $seminar->id;
+        $seminar = Seminar::with([
+            'thesis',
+            'thesis.field',
+            'thesis.lecturers',
+            'thesis.student',
+            'location',
+            'lecturers'
+        ])
+        ->where('id', $seminar_id)
+        ->first();
 
-        foreach ($key->lecturers as $index => $examiner) {
-            $examiners[$index] = [
-                'id' => $examiner->id,
-                'name' => $examiner->name,
-                'status' => $examiner->pivot->status
-            ];
-        }
-        $status_examiners = array_column($examiners, 'status');
-        array_multisort($status_examiners, SORT_ASC, $examiners);
-        $seminar = [
-            'register_date' => $key->register_date,
-            'status' => $key->status,
-            'name' => $key->name,
-            'date' => $key->date,
-            'time' => $key->time,
-            'location' => $key->location_id ? $key->location->name : null,
-            'examiners' => $examiners,
-            'semester' => $key->semester
-        ];
-
-        $data = [
-            'id' => $key->id,
-            'student' => $student,
-            'thesis' => $thesis,
-            'seminar' => $seminar
-        ];
-
-        $response = [
+        return (new SeminarResource($seminar))->additional([
             'code'=> '200',
-            'status'=> 'OK',
-            'data'=> $data
-        ];
-
-        return response()->json($response, Response::HTTP_OK);
+            'status'=> 'OK'
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Models\Seminar  $seminar
-     * @param  \Illuminate\Http\Requests\SeminarRequest  $request
-     * @return \Illuminate\Http\Response
-     */
     public function update(SeminarRequest $request, Seminar $seminar)
     {
         DB::transaction(function() use($request, $seminar) {
@@ -236,34 +132,11 @@ class SeminarController extends Controller
             'status'=> 'OK'
         ];
 
-        return response()->json($response, Response::HTTP_OK);
+        return response()->json($response, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Seminar  $seminar
-     * @return \Illuminate\Http\Response
-     */
-    public function schedule_update(Request $request, Seminar $seminar)
+    public function schedule_update(SeminarScheduleRequest $request, Seminar $seminar)
     {
-        $validator = Validator::make($request->all(), [
-            'date' => ['required'],
-            'time' => ['required'],
-            'location' => ['required']
-        ]);
-
-        if($validator->fails()) {
-            $errors = $validator->errors();
-            $response = [
-                'code'=> '422',
-                'status'=> 'Unprocessable Content',
-                'data'=> $errors
-            ];
-            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         DB::transaction(function() use($request, $seminar) {
             $seminar->update([
                 'date' => $request->date,
@@ -278,25 +151,18 @@ class SeminarController extends Controller
             'status'=> 'OK'
         ];
 
-        return response()->json($response, Response::HTTP_OK);
+        return response()->json($response, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Seminar  $seminar
-     * @return \Illuminate\Http\Response
-     */
     public function validate_update(Request $request, Seminar $seminar)
     {
         if($seminar->status !== 'Scheduled') {
             $response = [
                 'code'=> '422',
                 'status'=> 'Unprocessable Content',
-                'data'=> ["status" => 'Not scheduled!']
+                'data'=> ['status' => 'Not scheduled!']
             ];
-            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
+            return response()->json($response, 422);
         }
 
         DB::transaction(function() use($request, $seminar) {
@@ -310,15 +176,9 @@ class SeminarController extends Controller
             'status'=> 'OK'
         ];
 
-        return response()->json($response, Response::HTTP_OK);
+        return response()->json($response, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Seminar  $seminar
-     * @return \Illuminate\Http\Response
-     */
     public function destroy(Seminar $seminar)
     {
         DB::transaction(function () use($seminar) {
@@ -333,15 +193,9 @@ class SeminarController extends Controller
             'status'=> 'OK'
         ];
 
-        return response()->json($response, Response::HTTP_OK);
+        return response()->json($response, 200);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Seminar  $seminar
-     * @return \Illuminate\Http\Response
-     */
     public function print(Seminar $seminar)
     {
         if($seminar->status !== 'Validated') {
@@ -350,7 +204,7 @@ class SeminarController extends Controller
                 'status'=> 'Unprocessable Content',
                 'data'=> ["status" => 'Not validated!']
             ];
-            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
+            return response()->json($response, 422);
         }
 
         $key = $seminar;

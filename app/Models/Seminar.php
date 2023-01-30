@@ -13,25 +13,16 @@ class Seminar extends Model
 
     protected $guarded = [];
 
-    /**
-     * The lecturers that belong to the seminar.
-     */
     public function lecturers()
     {
-        return $this->morphToMany(Lecturer::class, 'lecturerable')->withPivot(['status']);
+        return $this->morphToMany(Lecturer::class, 'lecturerable')->withPivot(['status'])->orderBy('status', 'ASC');
     }
 
-    /**
-     * Get the location that owns the seminar.
-     */
     public function location()
     {
         return $this->belongsTo(Location::class);
     }
 
-    /**
-     * Get the thesis that owns the seminar.
-     */
     public function thesis()
     {
         return $this->belongsTo(Thesis::class);

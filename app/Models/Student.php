@@ -13,9 +13,6 @@ class Student extends Model
 
     protected $guarded = [];
 
-    /**
-     * Get the phone associated with the user.
-     */
     public function thesis()
     {
         return $this->hasOne(Thesis::class);
