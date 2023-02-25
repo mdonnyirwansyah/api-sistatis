@@ -67,8 +67,9 @@ class ThesisController extends Controller
         });
 
         $response = [
-            'code'=> '201',
-            'status'=> 'Created'
+            'code' => '201',
+            'status' => 'Created',
+            'message' => 'Data berhasil ditambah'
         ];
 
         return response()->json($response, 201);
@@ -90,7 +91,8 @@ class ThesisController extends Controller
 
         return (new ThesisResource($thesis))->additional([
             'code'=> '200',
-            'status'=> 'OK'
+            'status'=> 'OK',
+            'message' => 'Thesis data by id'
         ]);
     }
 
@@ -110,7 +112,8 @@ class ThesisController extends Controller
             $response = [
                 'data'=> $data,
                 'code'=> '404',
-                'status'=> 'Not Found'
+                'status'=> 'Not Found',
+                'message' => 'Data tidak ditemukan'
             ];
 
             return response()->json($response, 404);
@@ -118,7 +121,8 @@ class ThesisController extends Controller
 
         return (new ThesisResource($thesis))->additional([
             'code'=> '200',
-            'status'=> 'OK'
+            'status'=> 'OK',
+            'message' => 'Thesis data by nim'
         ]);
     }
 
@@ -154,7 +158,8 @@ class ThesisController extends Controller
 
         $response = [
             'code'=> '200',
-            'status'=> 'OK'
+            'status'=> 'OK',
+            'message' => 'Data berhasil diubah'
         ];
 
         return response()->json($response, 200);
@@ -167,7 +172,8 @@ class ThesisController extends Controller
 
         $response = [
             'code'=> '200',
-            'status'=> 'OK'
+            'status'=> 'OK',
+            'message' => 'Data berhasil dihapus'
         ];
 
         return response()->json($response, 200);
@@ -190,7 +196,8 @@ class ThesisController extends Controller
 
             $response = [
                 'code'=> '200',
-                'status'=> 'OK'
+                'status'=> 'OK',
+                'message' => 'Data berhasil diimport'
             ];
 
             return response()->json($response, 201);

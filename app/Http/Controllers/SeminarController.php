@@ -76,7 +76,8 @@ class SeminarController extends Controller
 
         $response = [
             'code'=> '200',
-            'status'=> 'OK'
+            'status'=> 'OK',
+            'message' => 'Data berhasil ditambah'
         ];
 
         return response()->json($response, 200);
@@ -98,7 +99,8 @@ class SeminarController extends Controller
 
         return (new SeminarResource($seminar))->additional([
             'code'=> '200',
-            'status'=> 'OK'
+            'status'=> 'OK',
+            'message' => 'Seminar data by id'
         ]);
     }
 
@@ -129,7 +131,8 @@ class SeminarController extends Controller
 
         $response = [
             'code'=> '200',
-            'status'=> 'OK'
+            'status'=> 'OK',
+            'message' => 'Data berhasil diubah'
         ];
 
         return response()->json($response, 200);
@@ -148,7 +151,8 @@ class SeminarController extends Controller
 
         $response = [
             'code'=> '200',
-            'status'=> 'OK'
+            'status'=> 'OK',
+            'message' => 'Data berhasil diatur'
         ];
 
         return response()->json($response, 200);
@@ -160,7 +164,7 @@ class SeminarController extends Controller
             $response = [
                 'code'=> '422',
                 'status'=> 'Unprocessable Content',
-                'data'=> ['status' => 'Not scheduled!']
+                'message' => 'Data seminar belum dijadwalkan'
             ];
             return response()->json($response, 422);
         }
@@ -173,7 +177,8 @@ class SeminarController extends Controller
 
         $response = [
             'code'=> '200',
-            'status'=> 'OK'
+            'status'=> 'OK',
+            'message' => 'Data berhasil divalidasi'
         ];
 
         return response()->json($response, 200);
@@ -190,7 +195,8 @@ class SeminarController extends Controller
 
         $response = [
             'code'=> '200',
-            'status'=> 'OK'
+            'status'=> 'OK',
+            'message' => 'Data berhasil dihapus'
         ];
 
         return response()->json($response, 200);
@@ -202,7 +208,7 @@ class SeminarController extends Controller
             $response = [
                 'code'=> '422',
                 'status'=> 'Unprocessable Content',
-                'data'=> ["status" => 'Not validated!']
+                'message' => 'Data seminar belum divalidasi'
             ];
             return response()->json($response, 422);
         }

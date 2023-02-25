@@ -11,7 +11,8 @@ class FieldCollection extends ResourceCollection
         return [
             'data' => FieldResource::collection($this->collection),
             'code'=> '200',
-            'status'=> 'OK'
+            'status'=> 'OK',
+            'message' => 'All field data'
         ];
     }
 }

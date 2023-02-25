@@ -18,7 +18,8 @@ class UserController extends Controller
 
         $response = [
             'code'=> '200',
-            'status'=> 'OK'
+            'status'=> 'OK',
+            'message' => 'Data berhasil diubah'
         ];
 
         return response()->json($response, Response::HTTP_OK);
