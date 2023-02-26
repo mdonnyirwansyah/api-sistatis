@@ -53,7 +53,7 @@ class ThesisController extends Controller
                 'name' => $request->name,
                 'nim' => $request->nim,
                 'phone' => $request->phone,
-                'status' => 'Tugas Akhir'
+                'status' => 'Pendaftaran Tugas Akhir'
             ]);
 
             $thesis = Thesis::create([
