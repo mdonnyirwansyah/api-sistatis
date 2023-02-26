@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ThesisCollection;
+use App\Http\Resources\ThesisResource;
+use App\Http\Requests\ThesisRequest;
 use App\Imports\ThesisImport;
 use App\Models\Student;
 use App\Models\Thesis;
-use App\Http\Resources\ThesisCollection;
-use App\Http\Resources\ThesisResource;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

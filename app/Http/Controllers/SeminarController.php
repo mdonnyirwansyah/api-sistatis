@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Seminar;
-use App\Models\Thesis;
 use App\Http\Resources\SeminarCollection;
 use App\Http\Resources\SeminarResource;
 use App\Http\Requests\SeminarRequest;
 use App\Http\Requests\SeminarScheduleRequest;
+use App\Models\Seminar;
+use App\Models\Thesis;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PDF;
@@ -152,7 +152,7 @@ class SeminarController extends Controller
         $response = [
             'code'=> '200',
             'status'=> 'OK',
-            'message' => 'Data berhasil diatur'
+            'message' => 'Data berhasil dijadwalkan'
         ];
 
         return response()->json($response, 200);
@@ -189,7 +189,7 @@ class SeminarController extends Controller
         DB::transaction(function () use($seminar) {
             $seminar->delete();
             $seminar->thesis->student->update([
-                'status' => 'Tugas Akhir'
+                'status' => 'Pendaftaran Tugas Akhir'
             ]);
         });
 
