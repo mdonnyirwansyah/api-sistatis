@@ -8,9 +8,12 @@ use App\Http\Requests\SeminarRequest;
 use App\Http\Requests\SeminarScheduleRequest;
 use App\Models\Seminar;
 use App\Models\Thesis;
+use App\Models\CounterOfLetter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use PDF;
+use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
+use QrCode;
 
 class SeminarController extends Controller
 {
@@ -42,6 +45,18 @@ class SeminarController extends Controller
 
     public function store(SeminarRequest $request)
     {
+        $existSeminar = Seminar::where('thesis_id', $request->thesis_id)->where('name', $request->name)->first();
+
+        if ($existSeminar) {
+            $response = [
+                'data' => [],
+                'code' => '422',
+                'status' => 'Unprocessable Content',
+                'message' => 'Data seminar sudah ada'
+            ];
+
+            return response()->json($response, 422);
+        }
         DB::transaction(function() use($request) {
             $examiners = [];
             $examiners[0] = [
@@ -59,7 +74,7 @@ class SeminarController extends Controller
 
             $seminar = Seminar::create([
                 'thesis_id' => $request->thesis_id,
-                'name' => 'Seminar Proposal Tugas Akhir',
+                'name' => $request->name,
                 'register_date' => $request->register_date,
                 'semester' => $request->semester,
                 'status' => 'Registered'
@@ -67,16 +82,23 @@ class SeminarController extends Controller
 
             $seminar->lecturers()->sync($examiners);
 
+            if ($request->chief_of_examiner && $request->name == 'Sidang Tugas Akhir') {
+                $seminar->chiefOfExaminer()->create([
+                    'lecturer_id' => $request->chief_of_examiner
+                ]);
+            }
+
             $thesis = Thesis::find($request->thesis_id);
 
             $thesis->student->update([
-                'status' => 'Seminar Proposal Tugas Akhir'
+                'status' => $request->name
             ]);
         });
 
         $response = [
-            'code'=> '200',
-            'status'=> 'OK',
+            'data' => [],
+            'code' => '200',
+            'status' => 'OK',
             'message' => 'Data berhasil ditambah'
         ];
 
@@ -92,14 +114,17 @@ class SeminarController extends Controller
             'thesis.lecturers',
             'thesis.student',
             'location',
-            'lecturers'
+            'lecturers',
+            'chiefOfExaminer',
+            'chiefOfExaminer.lecturer'
         ])
         ->where('id', $seminar_id)
         ->first();
 
         return (new SeminarResource($seminar))->additional([
-            'code'=> '200',
-            'status'=> 'OK',
+            'data' => [],
+            'code' => '200',
+            'status' => 'OK',
             'message' => 'Seminar data by id'
         ]);
     }
@@ -130,8 +155,9 @@ class SeminarController extends Controller
         });
 
         $response = [
-            'code'=> '200',
-            'status'=> 'OK',
+            'data' => [],
+            'code' => '200',
+            'status' => 'OK',
             'message' => 'Data berhasil diubah'
         ];
 
@@ -150,8 +176,9 @@ class SeminarController extends Controller
         });
 
         $response = [
-            'code'=> '200',
-            'status'=> 'OK',
+            'data' => [],
+            'code' => '200',
+            'status' => 'OK',
             'message' => 'Data berhasil dijadwalkan'
         ];
 
@@ -162,22 +189,56 @@ class SeminarController extends Controller
     {
         if($seminar->status !== 'Scheduled') {
             $response = [
-                'code'=> '422',
-                'status'=> 'Unprocessable Content',
+                'data' => [],
+                'code' => '422',
+                'status' => 'Unprocessable Content',
                 'message' => 'Data seminar belum dijadwalkan'
             ];
             return response()->json($response, 422);
         }
 
         DB::transaction(function() use($request, $seminar) {
+            switch ($seminar->name) {
+                case 'Seminar Proposal Tugas Akhir':
+                    $type = 'SP';
+                    break;
+
+                case 'Seminar Hasil Tugas Akhir':
+                    $type = 'SH';
+                    break;
+
+                default:
+                    $type = 'SS';
+                    break;
+            }
+            $year = date('Y');
+            $maxLength = 3;
+            $numberOfLetter = null;
+
+            $counterOfLetter = CounterOfLetter::where('type', $type)->where('year', $year)->first();
+            if ($counterOfLetter) {
+                $counterOfLetter->increment('value', 1);
+                $counterOfLetter->fresh();
+            } else {
+                $counterOfLetter = new CounterOfLetter();
+                $counterOfLetter->type = $type;
+                $counterOfLetter->year = $year;
+                $counterOfLetter->value = 1;
+                $counterOfLetter->save();
+            }
+            $number = Str::padLeft($counterOfLetter->value, $maxLength, '0');
+            $numberOfLetter = $number .'/'. $type .'/TS-S1/'. $seminar->semester .'/'. $year;
             $seminar->update([
                 'status' => 'Validated',
+                'number_of_letter' => $numberOfLetter,
+                'validate_date' => date('Y-m-d')
             ]);
         });
 
         $response = [
-            'code'=> '200',
-            'status'=> 'OK',
+            'data' => [],
+            'code' => '200',
+            'status' => 'OK',
             'message' => 'Data berhasil divalidasi'
         ];
 
@@ -187,27 +248,42 @@ class SeminarController extends Controller
     public function destroy(Seminar $seminar)
     {
         DB::transaction(function () use($seminar) {
-            $seminar->delete();
+            switch ($seminar->name) {
+                case 'Sidang Tugas Akhir':
+                    $status = 'Seminar Hasil Tugas Akhir';
+                    break;
+
+                case 'Seminar Hasil Tugas Akhir':
+                    $status = 'Seminar Proposal Tugas Akhir';
+                    break;
+
+                default:
+                    $status = 'Pendaftaran Tugas Akhir';
+                    break;
+            }
             $seminar->thesis->student->update([
-                'status' => 'Pendaftaran Tugas Akhir'
+                'status' => $status
             ]);
+            $seminar->delete();
         });
 
         $response = [
-            'code'=> '200',
-            'status'=> 'OK',
+            'data' => [],
+            'code' => '200',
+            'status' => 'OK',
             'message' => 'Data berhasil dihapus'
         ];
 
         return response()->json($response, 200);
     }
 
-    public function print(Seminar $seminar)
+    public function undangan(Seminar $seminar)
     {
         if($seminar->status !== 'Validated') {
             $response = [
-                'code'=> '422',
-                'status'=> 'Unprocessable Content',
+                'data' => [],
+                'code' => '422',
+                'status' => 'Unprocessable Content',
                 'message' => 'Data seminar belum divalidasi'
             ];
             return response()->json($response, 422);
@@ -221,53 +297,62 @@ class SeminarController extends Controller
             'phone' => $key->thesis->student->phone,
             'status' => $key->thesis->student->status,
         ];
-        foreach ($key->thesis->lecturers as $index => $supervisor) {
-            $supervisors[$index] = [
-                'id' => $supervisor->id,
-                'name' => $supervisor->name,
-                'status' => $supervisor->pivot->status
+        $lecturers = [];
+
+        foreach ($key->thesis->lecturers as $supervisor) {
+            $add = [
+                'name' => $supervisor->name
             ];
+            array_push($lecturers, $add);
         }
-        $status_supervisors = array_column($supervisors, 'status');
-        array_multisort($status_supervisors, SORT_ASC, $supervisors);
+
         $thesis = [
             'id' => $key->thesis->id,
             'register_date' => $key->thesis->register_date,
             'title' => $key->thesis->title,
             'field_id' => $key->thesis->field->id,
             'field' => $key->thesis->field->name,
-            'supervisors' => $supervisors
         ];
 
-        foreach ($key->lecturers as $index => $examiner) {
-            $examiners[$index] = [
-                'id' => $examiner->id,
+        foreach ($key->lecturers as $examiner) {
+            $add = [
                 'name' => $examiner->name,
-                'status' => $examiner->pivot->status
             ];
+            array_push($lecturers, $add);
         }
-        $status_examiners = array_column($examiners, 'status');
-        array_multisort($status_examiners, SORT_ASC, $examiners);
+
+        if($key->chiefOfExaminer) {
+            $chiefOfExaminer = [
+                'name' => $key->chiefOfExaminer->lecturer->name
+            ];
+
+            array_unshift($lecturers, $chiefOfExaminer);
+        }
+
         $seminar = [
             'register_date' => $key->register_date,
             'status' => $key->status,
-            'validate_date' => date_format(new \DateTime($key->date), 'd M Y'),
+            'validate_date' => date_format(new \DateTime($key->validate_date), 'd M Y'),
             'name' => $key->name,
             'date' => date_format(new \DateTime($key->date), 'D / d M Y'),
             'time' => date_format(new \DateTime($key->time), 'H:i'),
             'location' => $key->location->name,
-            'examiners' => $examiners,
             'semester' => $key->semester
         ];
 
+        $qrcode = base64_encode(QrCode::format('svg')->size(75)->errorCorrection('H')->generate($key->number_of_letter));
+
         $data = [
             'id' => $key->id,
+            'number_of_letter' => $key->number_of_letter,
+            'lecturers' => $lecturers,
             'student' => $student,
             'thesis' => $thesis,
-            'seminar' => $seminar
+            'seminar' => $seminar,
+            'sign' => $qrcode
         ];
 
-        $pdf = PDF::loadView('pdf.undangan', compact('data'))
+        $pdf = Pdf::loadView('pdf.undangan', compact('data'))
         ->setPaper('a4')->setOption('margin-top', '1cm')->setOption('margin-bottom', '1cm')->setOption('margin-left', '3cm')->setOption('margin-right', '3cm');
 
         return $pdf->download('undangan.pdf');

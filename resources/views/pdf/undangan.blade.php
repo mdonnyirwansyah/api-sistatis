@@ -27,7 +27,7 @@
             }
             p {
                 margin: 0;
-                font-size: 16px;
+                font-size: 12px;
             }
             .logo {
                 width: 100px;
@@ -37,7 +37,7 @@
                 margin: 0.5px;
             }
             .body {
-                font-size: 16px;
+                font-size: 12px;
             }
         </style>
     </head>
@@ -47,7 +47,7 @@
                 <tbody>
                     <tr>
                         <td style="width: 7em">
-                            <img class="logo" src="{{ asset('dist/img/logo-unri.png') }}" alt="Logo UNRI">
+                            <img class="logo" src="{{ public_path('dist/img/logo-unri.png') }}" alt="Logo UNRI">
                         </td>
                         <td class="header">
                             <h1><b>Program Studi Teknik Sipil</b></h1>
@@ -65,12 +65,12 @@
                         <tr>
                             <td style="width: 100px;">Nomor</td>
                             <td style="width: 15px;">:</td>
-                            <td>{{ $data['id'] }}/SP/TS-S1/IX/2022</td>
+                            <td>{{ $data['number_of_letter'] }}</td>
                         </tr>
                         <tr>
                             <td style="width: 100px;">Lamp.</>
                             <td style="width: 15px;">:</td>
-                            <td></td>
+                            <td>-</td>
                         </tr>
                         <tr>
                             <td style="width: 100px;">Hal</td>
@@ -89,18 +89,11 @@
                 </table>
                 <table style="width: 100%">
                     <tbody>
-                        @foreach ($data['thesis']['supervisors'] as $index => $supervisor)
+                        @foreach ($data['lecturers'] as $index => $lecturer)
                             <tr>
                                 <td style="width: 100px;">{!! $index == 0 ? 'Saudara' : null !!}</td>
                                 <td style="width: 15px;">{{ $index + 1 . '.' }}</td>
-                                <td>{{ $supervisor['name'] }}</td>
-                            </tr>
-                        @endforeach
-                        @foreach ($data['seminar']['examiners'] as $index => $examiner )
-                            <tr>
-                                <td style="width: 100px;"></td>
-                                <td style="width: 15px;">{{ $index + 3 . '.' }}</td>
-                                <td>{{ $examiner['name'] }}</td>
+                                <td>{{ $lecturer['name'] }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -115,7 +108,7 @@
                 <table style="width: 100%">
                     <tbody>
                         <tr>
-                            <td style="text-align: justify;">Dengan ini Kami mengundang Saudara untuk hadir pada Seminar Proposal Tugas Akhir untuk mahasiswa berikut:</td>
+                            <td style="text-align: justify;">Dengan ini Kami mengundang Saudara untuk hadir pada {{ $data['seminar']['name'] }} untuk mahasiswa berikut:</td>
                         </tr>
                     </tbody>
                 </table>
@@ -147,7 +140,7 @@
                 <table style="width: 100%">
                     <tbody>
                         <tr>
-                            <td>Seminar Proposal akan dilaksanakan pada:</td>
+                            <td>{{ $data['seminar']['name'] }} akan dilaksanakan pada:</td>
                         </tr>
                     </tbody>
                 </table>
@@ -182,23 +175,23 @@
                 <table style="width: 100%">
                     <tbody>
                         <tr>
-                            <td style="width: 22em;"></td>
+                            <td style="width: 40em;"></td>
                             <td>Pekanbaru, {{ $data['seminar']['validate_date'] }}</td>
                         </tr>
                         <tr>
-                            <td style="width: 22em;"></td>
+                            <td style="width: 40em;"></td>
                             <td>Koordinator Program Studi S1 Teknik Sipil</td>
                         </tr>
                         <tr>
-                            <td style="width: 22em;"></td>
-                            <td>{!! QrCode::generate('Andy Hendri, ST., MT'); !!}</td>
+                            <td style="width: 40em;"></td>
+                            <td><img src="data:image/png;base64, {!! $data['sign'] !!}"></td>
                         </tr>
                         <tr>
-                            <td style="width: 22em;"></td>
+                            <td style="width: 40em;"></td>
                             <td style="text-decoration: underline">Andy Hendri, ST., MT</td>
                         </tr>
                         <tr>
-                            <td style="width: 22em;"></td>
+                            <td style="width: 40em;"></td>
                             <td>NIP. 19690717 199803 1 002</td>
                         </tr>
                     </tbody>
@@ -213,7 +206,7 @@
                         <tr>
                             <td style="text-align: justify;">
                                 <ul>
-                                    <li>Pembimbing 1 atau 2 HARUS hadir, kalau tidak terpenuhi maka seminar Proposal TA
+                                    <li>Pembimbing 1 atau 2 HARUS hadir, kalau tidak terpenuhi maka {{ $data['seminar']['name'] }}
                                         dibatalkan.</li>
                                     <li>Jika Penguji tidak dapat hadir maka koordinasikan dengan koordinator TA untuk mencari
                                         penguji pengganti</li>

@@ -25,9 +25,10 @@ class AuthController extends Controller
         if($validator->fails()) {
             $errors = $validator->errors();
             $response = [
-                'code'=> '422',
-                'status'=> 'Unprocessable Content',
-                'data'=> $errors
+                'data' => $errors,
+                'code' => '422',
+                'status' => 'Unprocessable Content',
+                'message' => 'Data form tidak valid'
             ];
             return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
         }
@@ -36,9 +37,10 @@ class AuthController extends Controller
 
         if (! $token = auth()->attempt($credentials)) {
             $response = [
+                'data'=> ['failed' => 'Identitas tersebut tidak cocok dengan data kami.'],
                 'code'=> '401',
                 'status'=> 'Unauthorized',
-                'data'=> ['failed' => 'Identitas tersebut tidak cocok dengan data kami.']
+                'message' => 'Data form tidak valid'
             ];
             return response()->json($response, Response::HTTP_UNAUTHORIZED);
         }
@@ -53,9 +55,10 @@ class AuthController extends Controller
         $cookie = $this->getCookie('access_token', $token);
 
         $response = [
+            'data'=> $this->respondWithToken($token)->original,
             'code'=> '200',
             'status'=> 'OK',
-            'data'=> $this->respondWithToken($token)->original
+            'message' => 'Login berhasil'
         ];
         return response()->json($response, Response::HTTP_OK)->withCookie($cookie);
     }
@@ -71,9 +74,10 @@ class AuthController extends Controller
         ];
 
         $response = [
+            'data'=> $data,
             'code'=> '200',
             'status'=> 'OK',
-            'data'=> $data
+            'message' => 'Data user by login'
         ];
         return response()->json($response, Response::HTTP_OK);
     }

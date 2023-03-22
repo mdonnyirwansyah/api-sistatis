@@ -15,7 +15,7 @@ class Seminar extends Model
 
     public function lecturers()
     {
-        return $this->morphToMany(Lecturer::class, 'lecturerable')->withPivot(['status'])->orderBy('status', 'DESC');
+        return $this->morphToMany(Lecturer::class, 'lecturerable')->withPivot(['status'])->orderBy('status', 'ASC');
     }
 
     public function location()
@@ -26,5 +26,10 @@ class Seminar extends Model
     public function thesis()
     {
         return $this->belongsTo(Thesis::class);
+    }
+
+    public function chiefOfExaminer()
+    {
+        return $this->hasOne(ChiefOfExaminer::class);
     }
 }

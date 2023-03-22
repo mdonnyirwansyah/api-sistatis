@@ -24,9 +24,9 @@ class SeminarSeeder extends Seeder
                     'date' => '2022-12-10',
                     'time' => '14:00:00',
                     'location_id' => 1,
-                    'semester' => 'Ganjil 2022/2023',
-                    'status' => 'validated',
-                    'validate_date' => '2022-12-03',
+                    'semester' => 'VII',
+                    'status' => 'Scheduled',
+                    'validate_date' => null,
                     'examiners' => array(
                         0 => array(
                             'lecturer_id' => 4,
@@ -49,7 +49,7 @@ class SeminarSeeder extends Seeder
                     'date' => null,
                     'time' => null,
                     'location_id' => null,
-                    'semester' => 'Ganjil 2022/2023',
+                    'semester' => 'VII',
                     'status' => 'Registered',
                     'validate_date' => null,
                     'examiners' => array(

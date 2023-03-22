@@ -56,7 +56,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::put('schedule/{seminar}', 'schedule_update');
         Route::put('validate/{seminar}', 'validate_update');
         Route::delete('{seminar}', 'destroy');
-        Route::get('undangan/{seminar}', 'print');
+        Route::get('undangan/{seminar}', 'undangan');
     });
     Route::prefix('user')->controller(UserController::class)->group(function () {
         Route::put('{user}', 'update');

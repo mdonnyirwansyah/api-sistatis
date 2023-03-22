@@ -17,8 +17,9 @@ class UserController extends Controller
         ]);
 
         $response = [
-            'code'=> '200',
-            'status'=> 'OK',
+            'data' => $user,
+            'code' => '200',
+            'status' => 'OK',
             'message' => 'Data berhasil diubah'
         ];
 

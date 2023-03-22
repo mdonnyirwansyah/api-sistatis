@@ -41,11 +41,12 @@ class Handler extends ExceptionHandler
         });
 
         $this->renderable(function (NotFoundHttpException $e, $request) {
-            if ($request->is('api/*')) { // <- Add your condition here
+            if ($request->is('api/*')) {
                 return response()->json([
                     'data' => [],
                     'code' => '404',
-                    'status' => 'NOT FOUND'
+                    'status' => 'NOT FOUND',
+                    'message' => 'URL tidak ditemukan'
                 ], 404);
             }
         });
@@ -54,9 +55,10 @@ class Handler extends ExceptionHandler
     protected function invalidJson($request, ValidationException $exception)
     {
         $response = [
-            'data'=> $exception->errors(),
+            'data'=> [$exception->errors()],
             'code'=> '422',
-            'status'=> 'Unprocessable Content'
+            'status'=> 'Unprocessable Content',
+            'message' => 'Data form tidak valid'
         ];
 
         return response()->json($response, $exception->status);

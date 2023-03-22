@@ -68,6 +68,7 @@ class ThesisController extends Controller
         });
 
         $response = [
+            'data' => [],
             'code' => '201',
             'status' => 'Created',
             'message' => 'Data berhasil ditambah'
@@ -91,8 +92,9 @@ class ThesisController extends Controller
         ->first();
 
         return (new ThesisResource($thesis))->additional([
-            'code'=> '200',
-            'status'=> 'OK',
+            'data' => [],
+            'code' => '200',
+            'status' => 'OK',
             'message' => 'Thesis data by id'
         ]);
     }
@@ -111,9 +113,9 @@ class ThesisController extends Controller
             $data = [];
 
             $response = [
-                'data'=> $data,
-                'code'=> '404',
-                'status'=> 'Not Found',
+                'data' => $data,
+                'code' => '404',
+                'status' => 'Not Found',
                 'message' => 'Data tidak ditemukan'
             ];
 
@@ -121,8 +123,9 @@ class ThesisController extends Controller
         }
 
         return (new ThesisResource($thesis))->additional([
-            'code'=> '200',
-            'status'=> 'OK',
+            'data' => [],
+            'code' => '200',
+            'status' => 'OK',
             'message' => 'Thesis data by nim'
         ]);
     }
@@ -158,8 +161,9 @@ class ThesisController extends Controller
         });
 
         $response = [
-            'code'=> '200',
-            'status'=> 'OK',
+            'data' => [],
+            'code' => '200',
+            'status' => 'OK',
             'message' => 'Data berhasil diubah'
         ];
 
@@ -172,8 +176,9 @@ class ThesisController extends Controller
         $student->delete();
 
         $response = [
-            'code'=> '200',
-            'status'=> 'OK',
+            'data' => [],
+            'code' => '200',
+            'status' => 'OK',
             'message' => 'Data berhasil dihapus'
         ];
 
@@ -196,8 +201,9 @@ class ThesisController extends Controller
             Excel::import(new ThesisImport, $file);
 
             $response = [
-                'code'=> '200',
-                'status'=> 'OK',
+                'data' => [],
+                'code' => '200',
+                'status' => 'OK',
                 'message' => 'Data berhasil diimport'
             ];
 

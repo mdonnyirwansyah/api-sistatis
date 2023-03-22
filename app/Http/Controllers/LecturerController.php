@@ -37,8 +37,10 @@ class LecturerController extends Controller
             Excel::import(new LecturerImport, $file);
 
             $response = [
-                'code'=> '200',
-                'status'=> 'OK'
+                'data' => [],
+                'code' => '200',
+                'status' => 'OK',
+                'message' => 'Data berhasil diimport'
             ];
 
             return response()->json($response, Response::HTTP_CREATED);
