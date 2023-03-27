@@ -5,6 +5,7 @@ use App\Http\Controllers\FieldController;
 use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ThesisController;
+use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\SeminarController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -36,6 +37,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::prefix('lecturer')->controller(LecturerController::class)->group(function () {
         Route::get('', 'index');
         Route::get('field', 'get_lecturers_by_field');
+        Route::get('classification', 'classification');
         Route::post('import', 'import');
     });
     Route::prefix('thesis')->controller(ThesisController::class)->group(function () {
@@ -57,6 +59,10 @@ Route::middleware(['auth:api'])->group(function () {
         Route::put('validate/{seminar}', 'validate_update');
         Route::delete('{seminar}', 'destroy');
         Route::get('undangan/{seminar}', 'undangan');
+        Route::get('berita-acara/{seminar}', 'beritaAcara');
+    });
+    Route::prefix('semester')->controller(SemesterController::class)->group(function () {
+        Route::get('', 'index');
     });
     Route::prefix('user')->controller(UserController::class)->group(function () {
         Route::put('{user}', 'update');

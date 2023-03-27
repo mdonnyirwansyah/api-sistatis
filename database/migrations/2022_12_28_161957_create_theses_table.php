@@ -19,6 +19,8 @@ class CreateThesesTable extends Migration
             $table->date('register_date');
             $table->string('title');
             $table->foreignId('field_id')->nullable()->constrained('fields', 'id')->onUpdate('cascade')->onDelete('cascade');
+            $table->string('semester');
+            $table->date('finish_date')->nullable();
             $table->timestamps();
         });
     }

@@ -8,6 +8,7 @@ use App\Http\Requests\SeminarRequest;
 use App\Http\Requests\SeminarScheduleRequest;
 use App\Models\Seminar;
 use App\Models\Thesis;
+use App\Models\Lecturer;
 use App\Models\CounterOfLetter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -212,6 +213,56 @@ class SeminarController extends Controller
                     break;
             }
             $year = date('Y');
+            $month = date('m');
+            switch ($month) {
+                case 1:
+                    $month = 'I';
+                    break;
+
+                case 2:
+                    $month = 'II';
+                    break;
+
+                case 3:
+                    $month = 'III';
+                    break;
+
+                case 4:
+                    $month = 'IV';
+                    break;
+
+                case 5:
+                    $month = 'V';
+                    break;
+
+                case 6:
+                    $month = 'VI';
+                    break;
+
+                case 7:
+                    $month = 'VII';
+                    break;
+
+                case 8:
+                    $month = 'VIII';
+                    break;
+
+                case 9:
+                    $month = 'IX';
+                    break;
+
+                case 10:
+                    $month = 'X';
+                    break;
+
+                case 11:
+                    $month = 'XI';
+                    break;
+
+                default:
+                    $month = 'XII';
+                    break;
+            }
             $maxLength = 3;
             $numberOfLetter = null;
 
@@ -227,7 +278,7 @@ class SeminarController extends Controller
                 $counterOfLetter->save();
             }
             $number = Str::padLeft($counterOfLetter->value, $maxLength, '0');
-            $numberOfLetter = $number .'/'. $type .'/TS-S1/'. $seminar->semester .'/'. $year;
+            $numberOfLetter = $number .'/'. $type .'/TS-S1/'. $month .'/'. $year;
             $seminar->update([
                 'status' => 'Validated',
                 'number_of_letter' => $numberOfLetter,
@@ -356,5 +407,72 @@ class SeminarController extends Controller
         ->setPaper('a4')->setOption('margin-top', '1cm')->setOption('margin-bottom', '1cm')->setOption('margin-left', '3cm')->setOption('margin-right', '3cm');
 
         return $pdf->download('undangan.pdf');
+    }
+
+    public function beritaAcara(Seminar $seminar)
+    {
+        if($seminar->status !== 'Validated') {
+            $response = [
+                'data' => [],
+                'code' => '422',
+                'status' => 'Unprocessable Content',
+                'message' => 'Data seminar belum divalidasi'
+            ];
+            return response()->json($response, 422);
+        }
+
+        $key = $seminar;
+
+        switch ($key->name) {
+            case 'Sidang Tugas Akhir':
+                $options = 'LULUS / TIDAK LULUS  *)';
+                break;
+
+            case 'Seminar Hasil Tugas Akhir':
+                $options = 'DILANJUTKAN / DIBATALKAN  *) KE PROSES SIDANG TUGAS AKHIR';
+                break;
+
+            default:
+                $options = 'DILANJUTKAN / DIBATALKAN  *) KE PROSES SEMINAR HASIL TUGAS AKHIR';
+                break;
+        }
+
+        $student = [
+            'name' => $key->thesis->student->name,
+            'nim' => $key->thesis->student->nim,
+        ];
+        $lecturers = [];
+
+        foreach ($key->thesis->lecturers as $supervisor) {
+            $add = [
+                'name' => $supervisor->name,
+                'nip' => $supervisor->nip
+            ];
+            array_push($lecturers, $add);
+        }
+
+        $thesis = [
+            'title' => $key->thesis->title,
+        ];
+
+        $seminar = [
+            'status' => $key->status,
+            'name' => $key->name,
+            'date' => $key->date
+        ];
+
+        $data = [
+            'lecturers' => $lecturers,
+            'student' => $student,
+            'thesis' => $thesis,
+            'seminar' => $seminar,
+            'options' => $options
+        ];
+
+
+        $pdf = Pdf::loadView('pdf.berita-acara', compact('data'))
+        ->setPaper('a4')->setOption('margin-top', '1cm')->setOption('margin-bottom', '1cm')->setOption('margin-left', '3cm')->setOption('margin-right', '3cm');
+
+        return $pdf->download('berita-acara.pdf');
     }
 }

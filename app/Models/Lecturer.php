@@ -23,8 +23,23 @@ class Lecturer extends Model
         return $this->morphedByMany(Thesis::class, 'lecturerable');
     }
 
+    public function supervisors1()
+    {
+        return $this->morphedByMany(Thesis::class, 'lecturerable')->wherePivot('status', 'Pembimbing 1');
+    }
+
+    public function supervisors2()
+    {
+        return $this->morphedByMany(Thesis::class, 'lecturerable')->wherePivot('status', 'Pembimbing 2');
+    }
+
     public function seminars()
     {
-        return $this->morphedByMany(Lecturer::class, 'lecturerable');
+        return $this->morphedByMany(Seminar::class, 'lecturerable')->withPivot(['status']);
+    }
+
+    public function chiefOfExaminers()
+    {
+        return $this->hasMany(ChiefOfExaminer::class);
     }
 }

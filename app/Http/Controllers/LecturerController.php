@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Imports\LecturerImport;
 use App\Models\Lecturer;
 use App\Models\Field;
+use App\Models\Seminar;
+use App\Models\Thesis;
 use App\Http\Resources\LecturerCollection;
+use App\Http\Resources\LecturerClassificationCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
@@ -58,5 +61,32 @@ class LecturerController extends Controller
         })->where('status', 'Aktif')->get();
 
         return new LecturerCollection($lecturers);
+    }
+
+    public function classification(Request $request)
+    {
+        $theses = collect(Thesis::select('semester')->orderBy('semester', 'DESC')->groupBy('semester')->get());
+        $seminars = collect(Seminar::select('semester')->orderBy('semester', 'DESC')->groupBy('semester')->get());
+        $collection = $theses->merge($seminars);
+        $collection = $collection->unique('semester');
+        $sorted = $collection->sortBy([
+            ['semester', 'desc']
+        ]);
+        $sorted = $sorted->first();
+        $semester = $request->semester ?? $sorted->semester;
+
+        $lecturers = Lecturer::with('fields')->select('id', 'nip', 'name', 'major')->withCount(['supervisors1', 'supervisors2', 'seminars AS examiners_count', 'chiefOfExaminers', 'supervisors1 AS supervisors_1_by_semester_count' => function ($q) use ($semester) {
+            $q->where('semester', $semester);
+        }, 'supervisors2 AS supervisors_2_by_semester_count' => function ($q) use ($semester) {
+            $q->where('semester', $semester);
+        }, 'seminars AS examiners_by_semester_count' => function ($q) use ($semester) {
+            $q->where('semester', $semester);
+        }, 'chiefOfExaminers AS chief_of_examiners_by_semester_count' => function ($q) use ($semester) {
+            $q->with('seminar', function ($q) use ($semester) {
+                $q->where('semester', $semester);
+            });
+        }])->get();
+
+        return new LecturerClassificationCollection($lecturers);
     }
 }

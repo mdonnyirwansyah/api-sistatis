@@ -36,7 +36,8 @@ class ThesisSeeder extends Seeder
                             'lecturer_id' => 3,
                             'status' => 'Pembimbing 2'
                         ),
-                    )
+                    ),
+                    'semester' => 'Genap 2022/2023'
                 )
             ),
             1 => array(
@@ -58,7 +59,8 @@ class ThesisSeeder extends Seeder
                             'lecturer_id' => 6,
                             'status' => 'Pembimbing 2'
                         ),
-                    )
+                    ),
+                    'semester' => 'Genap 2022/2023'
                 )
             ),
         );
@@ -76,7 +78,8 @@ class ThesisSeeder extends Seeder
                     'student_id' => $student->id,
                     'register_date' => $thesis['thesis']['register_date'],
                     'title' => $thesis['thesis']['title'],
-                    'field_id' => $thesis['thesis']['field_id']
+                    'field_id' => $thesis['thesis']['field_id'],
+                    'semester' => $thesis['thesis']['semester']
                 ]);
 
                 $created->lecturers()->sync($thesis['thesis']['supervisors']);

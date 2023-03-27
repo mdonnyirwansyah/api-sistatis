@@ -18,13 +18,13 @@ class SeminarSeeder extends Seeder
     {
         $seminars = array(
             0 => array(
-                    'register_date' => '2022-12-01',
+                    'register_date' => '2023-01-01',
                     'thesis_id' => 1,
                     'name' => 'Seminar Proposal Tugas Akhir',
-                    'date' => '2022-12-10',
+                    'date' => '2023-01-07',
                     'time' => '14:00:00',
                     'location_id' => 1,
-                    'semester' => 'VII',
+                    'semester' => 'Genap 2022/2023',
                     'status' => 'Scheduled',
                     'validate_date' => null,
                     'examiners' => array(
@@ -43,13 +43,13 @@ class SeminarSeeder extends Seeder
                     )
             ),
             1 => array(
-                    'register_date' => '2022-12-27',
+                    'register_date' => '2023-01-27',
                     'thesis_id' => 2,
                     'name' => 'Seminar Proposal Tugas Akhir',
                     'date' => null,
                     'time' => null,
                     'location_id' => null,
-                    'semester' => 'VII',
+                    'semester' => 'Genap 2022/2023',
                     'status' => 'Registered',
                     'validate_date' => null,
                     'examiners' => array(
