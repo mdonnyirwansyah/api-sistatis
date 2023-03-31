@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Thesis;
 use App\Models\Student;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ThesisSeeder extends Seeder
 {
@@ -71,7 +72,7 @@ class ThesisSeeder extends Seeder
                     'name' => $thesis['student']['name'],
                     'nim' => $thesis['student']['nim'],
                     'phone' => $thesis['student']['phone'],
-                    'status' => 'Tugas Akhir'
+                    'generation' => Str::padLeft(Str::substr($thesis['student']['nim'], 0, 2), 4, '20')
                 ]);
 
                 $created = Thesis::create([
@@ -80,6 +81,7 @@ class ThesisSeeder extends Seeder
                     'title' => $thesis['thesis']['title'],
                     'field_id' => $thesis['thesis']['field_id'],
                     'semester' => $thesis['thesis']['semester']
+
                 ]);
 
                 $created->lecturers()->sync($thesis['thesis']['supervisors']);

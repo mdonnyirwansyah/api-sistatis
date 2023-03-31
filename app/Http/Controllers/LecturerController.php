@@ -8,6 +8,7 @@ use App\Models\Field;
 use App\Models\Seminar;
 use App\Models\Thesis;
 use App\Http\Resources\LecturerCollection;
+use App\Http\Resources\LecturerResource;
 use App\Http\Resources\LecturerClassificationCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -32,7 +33,7 @@ class LecturerController extends Controller
 
         $file = $request->file('file');
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json($validator->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -53,10 +54,10 @@ class LecturerController extends Controller
         }
     }
 
-    public function get_lecturers_by_field(Request $request)
+    public function getLecturersByField(Request $request)
     {
         $field = $request->id;
-        $lecturers = Lecturer::whereHas('fields', function($query) use($field) {
+        $lecturers = Lecturer::whereHas('fields', function ($query) use ($field) {
             $query->where('id', $field);
         })->where('status', 'Aktif')->get();
 
@@ -85,8 +86,22 @@ class LecturerController extends Controller
             $q->with('seminar', function ($q) use ($semester) {
                 $q->where('semester', $semester);
             });
-        }])->get();
+        }])->paginate(5);
 
         return new LecturerClassificationCollection($lecturers);
+    }
+
+    public function show(Lecturer $lecturer)
+    {
+        $lecturer = $lecturer->with(['fields' => function ($q) {
+            $q->orderBy('pivot_status', 'asc');
+        }])->firstOrFail();
+
+        return (new LecturerResource($lecturer))->additional([
+            'data' => [],
+            'code' => '200',
+            'status' => 'OK',
+            'message' => 'Lecturer data by id'
+        ]);
     }
 }

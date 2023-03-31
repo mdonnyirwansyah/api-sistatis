@@ -38,7 +38,7 @@ class SeminarController extends Controller
             ])
             ->where('name', $request->name)
             ->orderBy('date', 'DESC')
-            ->get();
+            ->paginate(5);
 
             return new SeminarCollection($seminars);
         }
@@ -58,7 +58,7 @@ class SeminarController extends Controller
 
             return response()->json($response, 422);
         }
-        DB::transaction(function() use($request) {
+        DB::transaction(function () use ($request) {
             $examiners = [];
             $examiners[0] = [
                 'lecturer_id' => $request->examiner_1,
@@ -78,7 +78,7 @@ class SeminarController extends Controller
                 'name' => $request->name,
                 'register_date' => $request->register_date,
                 'semester' => $request->semester,
-                'status' => 'Registered'
+                'status' => 'Pendaftaran'
             ]);
 
             $seminar->lecturers()->sync($examiners);
@@ -91,7 +91,7 @@ class SeminarController extends Controller
 
             $thesis = Thesis::find($request->thesis_id);
 
-            $thesis->student->update([
+            $thesis->update([
                 'status' => $request->name
             ]);
         });
@@ -108,19 +108,21 @@ class SeminarController extends Controller
 
     public function show(Seminar $seminar)
     {
-        $seminar_id = $seminar->id;
-        $seminar = Seminar::with([
+        $seminar = $seminar->with([
             'thesis',
             'thesis.field',
-            'thesis.lecturers',
+            'thesis.lecturers' => function ($q) {
+                $q->orderBy('pivot_status', 'asc');
+            },
             'thesis.student',
             'location',
-            'lecturers',
+            'lecturers' => function ($q) {
+                $q->orderBy('pivot_status', 'asc');
+            },
             'chiefOfExaminer',
             'chiefOfExaminer.lecturer'
         ])
-        ->where('id', $seminar_id)
-        ->first();
+        ->firstOrFail();
 
         return (new SeminarResource($seminar))->additional([
             'data' => [],
@@ -132,7 +134,7 @@ class SeminarController extends Controller
 
     public function update(SeminarRequest $request, Seminar $seminar)
     {
-        DB::transaction(function() use($request, $seminar) {
+        DB::transaction(function () use ($request, $seminar) {
             $examiners = [];
             $examiners[0] = [
                 'lecturer_id' => $request->examiner_1,
@@ -165,14 +167,24 @@ class SeminarController extends Controller
         return response()->json($response, 200);
     }
 
-    public function schedule_update(SeminarScheduleRequest $request, Seminar $seminar)
+    public function scheduleUpdate(SeminarScheduleRequest $request, Seminar $seminar)
     {
-        DB::transaction(function() use($request, $seminar) {
+        if ($seminar->status !== 'Pendaftaran') {
+            $response = [
+                'data' => [],
+                'code' => '422',
+                'status' => 'Unprocessable Content',
+                'message' => 'Data seminar belum didaftarkan atau sudah terjadwal'
+            ];
+            return response()->json($response, 422);
+        }
+
+        DB::transaction(function () use ($request, $seminar) {
             $seminar->update([
                 'date' => $request->date,
                 'time' => $request->time,
                 'location_id' => $request->location,
-                'status' => 'Scheduled',
+                'status' => 'Penjadwalan',
             ]);
         });
 
@@ -186,9 +198,9 @@ class SeminarController extends Controller
         return response()->json($response, 200);
     }
 
-    public function validate_update(Request $request, Seminar $seminar)
+    public function validateUpdate(Request $request, Seminar $seminar)
     {
-        if($seminar->status !== 'Scheduled') {
+        if ($seminar->status !== 'Penjadwalan') {
             $response = [
                 'data' => [],
                 'code' => '422',
@@ -198,7 +210,7 @@ class SeminarController extends Controller
             return response()->json($response, 422);
         }
 
-        DB::transaction(function() use($request, $seminar) {
+        DB::transaction(function () use ($request, $seminar) {
             switch ($seminar->name) {
                 case 'Seminar Proposal Tugas Akhir':
                     $type = 'SP';
@@ -280,7 +292,7 @@ class SeminarController extends Controller
             $number = Str::padLeft($counterOfLetter->value, $maxLength, '0');
             $numberOfLetter = $number .'/'. $type .'/TS-S1/'. $month .'/'. $year;
             $seminar->update([
-                'status' => 'Validated',
+                'status' => 'Validasi',
                 'number_of_letter' => $numberOfLetter,
                 'validate_date' => date('Y-m-d')
             ]);
@@ -298,23 +310,25 @@ class SeminarController extends Controller
 
     public function destroy(Seminar $seminar)
     {
-        DB::transaction(function () use($seminar) {
+        DB::transaction(function () use ($seminar) {
             switch ($seminar->name) {
                 case 'Sidang Tugas Akhir':
-                    $status = 'Seminar Hasil Tugas Akhir';
+                    $thesisStatus = 'Seminar Hasil Tugas Akhir';
                     break;
 
                 case 'Seminar Hasil Tugas Akhir':
-                    $status = 'Seminar Proposal Tugas Akhir';
+                    $thesisStatus = 'Seminar Proposal Tugas Akhir';
                     break;
 
                 default:
-                    $status = 'Pendaftaran Tugas Akhir';
+                    $thesisStatus = 'Pendaftaran Tugas Akhir';
                     break;
             }
-            $seminar->thesis->student->update([
-                'status' => $status
+
+            $seminar->thesis->update([
+                'status' => $thesisStatus
             ]);
+
             $seminar->delete();
         });
 
@@ -330,7 +344,7 @@ class SeminarController extends Controller
 
     public function undangan(Seminar $seminar)
     {
-        if($seminar->status !== 'Validated') {
+        if ($seminar->status !== 'Validasi') {
             $response = [
                 'data' => [],
                 'code' => '422',
@@ -372,7 +386,7 @@ class SeminarController extends Controller
             array_push($lecturers, $add);
         }
 
-        if($key->chiefOfExaminer) {
+        if ($key->chiefOfExaminer) {
             $chiefOfExaminer = [
                 'name' => $key->chiefOfExaminer->lecturer->name
             ];
@@ -411,7 +425,7 @@ class SeminarController extends Controller
 
     public function beritaAcara(Seminar $seminar)
     {
-        if($seminar->status !== 'Validated') {
+        if ($seminar->status !== 'Validasi') {
             $response = [
                 'data' => [],
                 'code' => '422',

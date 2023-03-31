@@ -18,7 +18,8 @@ class CreateStudentsTable extends Migration
             $table->string('name');
             $table->string('nim');
             $table->string('phone');
-            $table->string('status')->nullable();
+            $table->year('generation');
+            $table->enum('status', ['Belum Lulus', 'Lulus'])->default('Belum Lulus');
             $table->timestamps();
         });
     }

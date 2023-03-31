@@ -25,7 +25,7 @@ class SeminarSeeder extends Seeder
                     'time' => '14:00:00',
                     'location_id' => 1,
                     'semester' => 'Genap 2022/2023',
-                    'status' => 'Scheduled',
+                    'status' => 'Penjadwalan',
                     'validate_date' => null,
                     'examiners' => array(
                         0 => array(
@@ -50,11 +50,11 @@ class SeminarSeeder extends Seeder
                     'time' => null,
                     'location_id' => null,
                     'semester' => 'Genap 2022/2023',
-                    'status' => 'Registered',
+                    'status' => 'Pendaftaran',
                     'validate_date' => null,
                     'examiners' => array(
                         0 => array(
-                            'lecturer_id' => 7,
+                            'lecturer_id' => 4,
                             'status' => 'Penguji 1'
                         ),
                         1 => array(
@@ -86,8 +86,8 @@ class SeminarSeeder extends Seeder
                 $created->lecturers()->sync($seminar['examiners']);
 
                 $thesis = Thesis::find($seminar['thesis_id']);
-                $thesis->student->update([
-                    'status' => 'Seminar Proposal Tugas Akhir'
+                $thesis->update([
+                    'status' => $seminar['name']
                 ]);
             });
         }

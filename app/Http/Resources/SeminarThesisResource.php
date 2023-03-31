@@ -14,7 +14,8 @@ class SeminarThesisResource extends JsonResource
             'register_date' => $this->register_date,
             'title' => $this->title,
             'field' => new FieldResource($this->whenLoaded('field')),
-            'supervisors' => LecturerResource::collection($this->whenLoaded('lecturers'))
+            'supervisors' => LecturerResource::collection($this->whenLoaded('lecturers')),
+            'status' => $this->status,
         ];
     }
 }

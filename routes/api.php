@@ -7,6 +7,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ThesisController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\SeminarController;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -36,14 +37,15 @@ Route::middleware(['auth:api'])->group(function () {
     });
     Route::prefix('lecturer')->controller(LecturerController::class)->group(function () {
         Route::get('', 'index');
-        Route::get('field', 'get_lecturers_by_field');
+        Route::get('{lecturer}', 'show');
+        Route::get('field', 'getLecturersByField');
         Route::get('classification', 'classification');
         Route::post('import', 'import');
     });
     Route::prefix('thesis')->controller(ThesisController::class)->group(function () {
         Route::get('', 'index');
         Route::get('filter', 'filter');
-        Route::get('show', 'show_by_nim');
+        Route::get('show', 'showByNim');
         Route::get('{thesis}', 'show');
         Route::post('', 'store');
         Route::put('{thesis}', 'update');
@@ -55,11 +57,14 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('', 'store');
         Route::get('{seminar}', 'show');
         Route::put('{seminar}', 'update');
-        Route::put('schedule/{seminar}', 'schedule_update');
-        Route::put('validate/{seminar}', 'validate_update');
+        Route::put('schedule/{seminar}', 'scheduleUpdate');
+        Route::put('validate/{seminar}', 'validateUpdate');
         Route::delete('{seminar}', 'destroy');
         Route::get('undangan/{seminar}', 'undangan');
         Route::get('berita-acara/{seminar}', 'beritaAcara');
+    });
+    Route::prefix('student')->controller(StudentController::class)->group(function () {
+        Route::get('', 'index');
     });
     Route::prefix('semester')->controller(SemesterController::class)->group(function () {
         Route::get('', 'index');

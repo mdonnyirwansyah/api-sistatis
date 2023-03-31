@@ -25,7 +25,7 @@ class Thesis extends Model
 
     public function lecturers()
     {
-        return $this->morphToMany(Lecturer::class, 'lecturerable')->withPivot(['status'])->orderBy('status', 'ASC');
+        return $this->morphToMany(Lecturer::class, 'lecturerable')->withPivot('status');
     }
 
     public function seminars()

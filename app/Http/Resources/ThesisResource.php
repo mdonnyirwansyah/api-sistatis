@@ -21,6 +21,7 @@ class ThesisResource extends JsonResource
                 'title' => $this->title,
                 'field' => new FieldResource($this->whenLoaded('field')),
                 'supervisors' => LecturerResource::collection($this->whenLoaded('lecturers')),
+                'status' => $this->status,
                 'finish_date' => $this->finish_date,
                 'duration' => $duration
             ],

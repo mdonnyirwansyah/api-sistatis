@@ -12,6 +12,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 
@@ -21,7 +22,7 @@ class ThesisController extends Controller
     {
         $theses = Thesis::with('student')
         ->orderBy('register_date', 'DESC')
-        ->get();
+        ->paginate(5);
 
         return new ThesisCollection($theses);
     }
@@ -32,7 +33,7 @@ class ThesisController extends Controller
         ->orderBy('register_date', 'DESC')
         ->whereRelation('student', 'status', $request->status)
         ->where('field_id', $request->field)
-        ->orderBy('register_date', 'DESC')->get();
+        ->orderBy('register_date', 'DESC')->paginate(5);
 
         return new ThesisCollection($theses);
     }
@@ -54,7 +55,7 @@ class ThesisController extends Controller
                 'name' => $request->name,
                 'nim' => $request->nim,
                 'phone' => $request->phone,
-                'status' => 'Pendaftaran Tugas Akhir'
+                'generation' => Str::padLeft(Str::substr($request->nim, 0, 2), 4, '20')
             ]);
 
             $thesis = Thesis::create([
@@ -79,17 +80,19 @@ class ThesisController extends Controller
 
     public function show(Thesis $thesis)
     {
-        $thesis_id = $thesis->id;
-        $thesis = Thesis::with([
+        $thesis = $thesis->with([
             'field',
-            'lecturers',
+            'lecturers' => function ($q) {
+                $q->orderBy('pivot_status', 'asc');
+            },
             'student',
             'seminars',
             'seminars.location',
-            'seminars.lecturers'
+            'seminars.lecturers' => function ($q) {
+                $q->orderBy('pivot_status', 'asc');
+            }
         ])
-        ->where('id', $thesis_id)
-        ->first();
+        ->firstOrFail();
 
         return (new ThesisResource($thesis))->additional([
             'data' => [],
@@ -99,7 +102,7 @@ class ThesisController extends Controller
         ]);
     }
 
-    public function show_by_nim(Request $request)
+    public function showByNim(Request $request)
     {
         $thesis = Thesis::with([
             'field',
@@ -149,6 +152,8 @@ class ThesisController extends Controller
                 'name' => $request->name,
                 'nim' => $request->nim,
                 'phone' => $request->phone,
+                'generation' => Str::padLeft(Str::substr($request->nim, 0, 2), 4, '20'),
+                'status' => $request->status,
             ]);
 
             $thesis->update([

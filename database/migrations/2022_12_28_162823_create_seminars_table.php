@@ -22,7 +22,7 @@ class CreateSeminarsTable extends Migration
             $table->time('time')->nullable();
             $table->foreignId('location_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('semester');
-            $table->enum('status', ['Registered', 'Scheduled', 'Validated']);
+            $table->enum('status', ['Pendaftaran', 'Penjadwalan', 'Validasi'])->default('Pendaftaran');
             $table->date('validate_date')->nullable();
             $table->string('number_of_letter')->nullable();
             $table->timestamps();
