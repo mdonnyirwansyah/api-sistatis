@@ -78,9 +78,9 @@ class ThesisController extends Controller
         return response()->json($response, 201);
     }
 
-    public function show(Thesis $thesis)
+    public function show($id)
     {
-        $thesis = $thesis->with([
+        $thesis = Thesis::where('id', $id)->with([
             'field',
             'lecturers' => function ($q) {
                 $q->orderBy('pivot_status', 'asc');

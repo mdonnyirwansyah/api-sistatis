@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\SemesterController;
+use App\Http\Controllers\LecturerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::prefix('semester')->controller(SemesterController::class)->group(function () {
-    Route::get('', 'index');
-});
+
+// Route::prefix('lecturer')->controller(LecturerController::class)->group(function () {
+//     Route::get('classification', 'classification');
+// });

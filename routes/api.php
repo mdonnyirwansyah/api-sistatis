@@ -37,16 +37,16 @@ Route::middleware(['auth:api'])->group(function () {
     });
     Route::prefix('lecturer')->controller(LecturerController::class)->group(function () {
         Route::get('', 'index');
-        Route::get('{lecturer}', 'show');
-        Route::get('field', 'getLecturersByField');
         Route::get('classification', 'classification');
+        Route::get('{id}', 'show');
+        Route::get('field', 'getLecturersByField');
         Route::post('import', 'import');
     });
     Route::prefix('thesis')->controller(ThesisController::class)->group(function () {
         Route::get('', 'index');
         Route::get('filter', 'filter');
         Route::get('show', 'showByNim');
-        Route::get('{thesis}', 'show');
+        Route::get('{id}', 'show');
         Route::post('', 'store');
         Route::put('{thesis}', 'update');
         Route::delete('{thesis}', 'destroy');
@@ -55,7 +55,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::prefix('seminar')->controller(SeminarController::class)->group(function () {
         Route::get('', 'index');
         Route::post('', 'store');
-        Route::get('{seminar}', 'show');
+        Route::get('{id}', 'show');
         Route::put('{seminar}', 'update');
         Route::put('schedule/{seminar}', 'scheduleUpdate');
         Route::put('validate/{seminar}', 'validateUpdate');

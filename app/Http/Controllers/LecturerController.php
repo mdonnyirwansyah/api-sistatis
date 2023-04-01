@@ -91,9 +91,9 @@ class LecturerController extends Controller
         return new LecturerClassificationCollection($lecturers);
     }
 
-    public function show(Lecturer $lecturer)
+    public function show($id)
     {
-        $lecturer = $lecturer->with(['fields' => function ($q) {
+        $lecturer = Lecturer::where('id', $id)->with(['fields' => function ($q) {
             $q->orderBy('pivot_status', 'asc');
         }])->firstOrFail();
 

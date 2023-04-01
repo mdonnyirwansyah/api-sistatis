@@ -10,6 +10,7 @@ use App\Models\Seminar;
 use App\Models\Thesis;
 use App\Models\Lecturer;
 use App\Models\CounterOfLetter;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -28,7 +29,7 @@ class SeminarController extends Controller
             ->where('name', $request->name)
             ->where('status', $request->status)
             ->orderBy('register_date', 'DESC')
-            ->get();
+            ->paginate(5);
 
             return new SeminarCollection($seminars);
         } else {
@@ -106,9 +107,9 @@ class SeminarController extends Controller
         return response()->json($response, 200);
     }
 
-    public function show(Seminar $seminar)
+    public function show($id)
     {
-        $seminar = $seminar->with([
+        $seminar = Seminar::where('id', $id)->with([
             'thesis',
             'thesis.field',
             'thesis.lecturers' => function ($q) {
@@ -296,6 +297,12 @@ class SeminarController extends Controller
                 'number_of_letter' => $numberOfLetter,
                 'validate_date' => date('Y-m-d')
             ]);
+
+            if ($seminar->name == 'Sidang Tugas Akhir') {
+                $seminar->thesis->update([
+                    'finish_date' => $seminar->date
+                ]);
+            }
         });
 
         $response = [
@@ -356,11 +363,9 @@ class SeminarController extends Controller
 
         $key = $seminar;
         $student = [
-            'id' => $key->thesis->student->id,
             'name' => $key->thesis->student->name,
             'nim' => $key->thesis->student->nim,
-            'phone' => $key->thesis->student->phone,
-            'status' => $key->thesis->student->status,
+            'phone' => $key->thesis->student->phone
         ];
         $lecturers = [];
 
@@ -372,11 +377,7 @@ class SeminarController extends Controller
         }
 
         $thesis = [
-            'id' => $key->thesis->id,
-            'register_date' => $key->thesis->register_date,
-            'title' => $key->thesis->title,
-            'field_id' => $key->thesis->field->id,
-            'field' => $key->thesis->field->name,
+            'title' => $key->thesis->title
         ];
 
         foreach ($key->lecturers as $examiner) {
@@ -394,15 +395,17 @@ class SeminarController extends Controller
             array_unshift($lecturers, $chiefOfExaminer);
         }
 
+        $date = Carbon::parse($key->date)->locale('id');
+        $validateDate = Carbon::parse($key->validate_date)->locale('id');
+        $date->settings(['formatFunction' => 'translatedFormat']);
+        $validateDate->settings(['formatFunction' => 'translatedFormat']);
+
         $seminar = [
-            'register_date' => $key->register_date,
-            'status' => $key->status,
-            'validate_date' => date_format(new \DateTime($key->validate_date), 'd M Y'),
+            'validate_date' => $validateDate->format('j F Y'),
             'name' => $key->name,
-            'date' => date_format(new \DateTime($key->date), 'D / d M Y'),
-            'time' => date_format(new \DateTime($key->time), 'H:i'),
-            'location' => $key->location->name,
-            'semester' => $key->semester
+            'date' => $date->format('l, j F Y'),
+            'time' => Carbon::parse($key->time)->format('H:i'),
+            'location' => $key->location->name
         ];
 
         $qrcode = base64_encode(QrCode::format('svg')->size(75)->errorCorrection('H')->generate($key->number_of_letter));
