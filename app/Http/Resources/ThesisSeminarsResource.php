@@ -16,6 +16,7 @@ class ThesisSeminarsResource extends JsonResource
             'date' => $this->date,
             'time' => $this->time,
             'location' => new LocationResource($this->whenLoaded('location')),
+            'chief_of_examiner' => new ChiefOfExaminerResource($this->whenLoaded('chiefOfExaminer')),
             'examiners' => LecturerResource::collection($this->whenLoaded('lecturers')),
             'semester' => $this->semester
         ];

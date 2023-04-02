@@ -27,13 +27,25 @@ class ThesisController extends Controller
         return new ThesisCollection($theses);
     }
 
-    public function filter(Request $request)
+    public function LecturerFilter(Request $request)
     {
-        $theses = Thesis::with('student')
-        ->orderBy('register_date', 'DESC')
-        ->whereRelation('student', 'status', $request->status)
-        ->where('field_id', $request->field)
-        ->orderBy('register_date', 'DESC')->paginate(5);
+        if ($request->lecturer_status == 'Pembimbing 1' || $request->lecturer_status == 'Pembimbing 2') {
+            $theses = Thesis::with('student')
+            ->whereHas('lecturers', function ($q) use ($request) {
+                $q->where('id', $request->lecturer_id)->where('lecturerables.status', $request->lecturer_status);
+            })
+            ->whereRelation('student', 'status', $request->student_status)
+            ->orderBy('register_date', 'DESC')
+            ->paginate(5);
+        } else {
+            $theses = Thesis::with(['student', 'field'])
+            ->whereHas('seminars.lecturers', function ($q) use ($request) {
+                $q->where('id', $request->lecturer_id);
+            })
+            ->whereRelation('student', 'status', $request->student_status)
+            ->orderBy('register_date', 'DESC')
+            ->paginate(5);
+        }
 
         return new ThesisCollection($theses);
     }
@@ -90,7 +102,9 @@ class ThesisController extends Controller
             'seminars.location',
             'seminars.lecturers' => function ($q) {
                 $q->orderBy('pivot_status', 'asc');
-            }
+            },
+            'seminars.chiefOfExaminer',
+            'seminars.chiefOfExaminer.lecturer'
         ])
         ->firstOrFail();
 

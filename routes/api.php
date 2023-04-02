@@ -7,7 +7,6 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ThesisController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\SeminarController;
-use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -44,7 +43,7 @@ Route::middleware(['auth:api'])->group(function () {
     });
     Route::prefix('thesis')->controller(ThesisController::class)->group(function () {
         Route::get('', 'index');
-        Route::get('filter', 'filter');
+        Route::get('lecturer-filter', 'lecturerFilter');
         Route::get('show', 'showByNim');
         Route::get('{id}', 'show');
         Route::post('', 'store');
@@ -62,9 +61,6 @@ Route::middleware(['auth:api'])->group(function () {
         Route::delete('{seminar}', 'destroy');
         Route::get('undangan/{seminar}', 'undangan');
         Route::get('berita-acara/{seminar}', 'beritaAcara');
-    });
-    Route::prefix('student')->controller(StudentController::class)->group(function () {
-        Route::get('', 'index');
     });
     Route::prefix('semester')->controller(SemesterController::class)->group(function () {
         Route::get('', 'index');
