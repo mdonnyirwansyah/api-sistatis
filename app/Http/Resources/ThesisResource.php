@@ -9,9 +9,9 @@ class ThesisResource extends JsonResource
 {
     public function toArray($request)
     {
-        $dt = Carbon::parse($this->register_date);
+        $start = Carbon::parse($this->register_date);
         $finish = Carbon::parse($this->finish_date) ?? Carbon::now();
-        $duration = $dt->diffForHumans($finish);
+        $duration = $start->floatDiffInMonths($finish);
 
         return [
             'id' => $this->id,
@@ -23,7 +23,7 @@ class ThesisResource extends JsonResource
                 'supervisors' => LecturerResource::collection($this->whenLoaded('lecturers')),
                 'status' => $this->status,
                 'finish_date' => $this->finish_date,
-                'duration' => $duration
+                'duration' => round($duration, 2)
             ],
             'seminars' => ThesisSeminarsResource::collection($this->whenLoaded('seminars')),
         ];

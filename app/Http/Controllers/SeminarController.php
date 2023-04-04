@@ -472,10 +472,18 @@ class SeminarController extends Controller
             'title' => $key->thesis->title,
         ];
 
+        $date = Carbon::parse($key->date)->locale('id');
+        $date->settings(['formatFunction' => 'translatedFormat']);
+
         $seminar = [
             'status' => $key->status,
             'name' => $key->name,
-            'date' => $key->date
+            'date' => $date->format('j F Y'),
+            'day_string' => $date->format('l'),
+            'day' => $date->format('j'),
+            'month' => $date->format('F'),
+            'year' => $date->format('Y')
+
         ];
 
         $data = [
@@ -485,7 +493,6 @@ class SeminarController extends Controller
             'seminar' => $seminar,
             'options' => $options
         ];
-
 
         $pdf = Pdf::loadView('pdf.berita-acara', compact('data'))
         ->setPaper('a4')->setOption('margin-top', '1cm')->setOption('margin-bottom', '1cm')->setOption('margin-left', '3cm')->setOption('margin-right', '3cm');

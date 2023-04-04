@@ -18,11 +18,17 @@ use Maatwebsite\Excel\Validators\ValidationException;
 
 class ThesisController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $theses = Thesis::with('student')
-        ->orderBy('register_date', 'DESC')
-        ->paginate(5);
+        if ($request->field_id && $request->status) {
+            $theses = Thesis::where('status', $request->status)->where('field_id', $request->field_id)->with('student', 'field')
+                ->orderBy('register_date', 'DESC')
+                ->paginate(5);
+        } else {
+            $theses = Thesis::with('student', 'field')
+                ->orderBy('register_date', 'DESC')
+                ->paginate(5);
+        }
 
         return new ThesisCollection($theses);
     }
@@ -67,6 +73,7 @@ class ThesisController extends Controller
                 'name' => $request->name,
                 'nim' => $request->nim,
                 'phone' => $request->phone,
+                'register_date' => Str::padLeft(Str::substr($request->nim, 0, 2), 4, '20'). '-' .Str::substr($request->nim, 2, 2). '-01',
                 'generation' => Str::padLeft(Str::substr($request->nim, 0, 2), 4, '20')
             ]);
 
@@ -74,7 +81,8 @@ class ThesisController extends Controller
                 'student_id' => $student->id,
                 'register_date' => $request->register_date,
                 'title' => $request->title,
-                'field_id' => $request->field
+                'field_id' => $request->field,
+                'semester' => $request->semester,
             ]);
 
             $thesis->lecturers()->sync($supervisors);
@@ -166,6 +174,7 @@ class ThesisController extends Controller
                 'name' => $request->name,
                 'nim' => $request->nim,
                 'phone' => $request->phone,
+                'register_date' => Str::padLeft(Str::substr($request->nim, 0, 2), 4, '20'). '-' .Str::substr($request->nim, 2, 2). '-01',
                 'generation' => Str::padLeft(Str::substr($request->nim, 0, 2), 4, '20'),
                 'status' => $request->status,
             ]);
@@ -231,5 +240,12 @@ class ThesisController extends Controller
             $failures = $e->failures();
             return response()->json($failures, 422);
         }
+    }
+
+    public function classification()
+    {
+        $theses = Thesis::with('student', 'field')->whereNotNull('finish_date')->get();
+
+        return new ThesisCollection($theses);
     }
 }

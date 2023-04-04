@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\LecturerController;
+use App\Http\Controllers\SeminarController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::prefix('lecturer')->controller(LecturerController::class)->group(function () {
-//     Route::get('classification', 'classification');
-// });
+Route::prefix('seminar')->controller(SeminarController::class)->group(function () {
+    Route::get('berita-acara/{seminar}', 'beritaAcara');
+});

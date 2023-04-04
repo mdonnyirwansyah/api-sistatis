@@ -83,9 +83,7 @@ class LecturerController extends Controller
         }, 'seminars AS examiners_by_semester_count' => function ($q) use ($semester) {
             $q->where('semester', $semester);
         }, 'chiefOfExaminers AS chief_of_examiners_by_semester_count' => function ($q) use ($semester) {
-            $q->with('seminar', function ($q) use ($semester) {
-                $q->where('semester', $semester);
-            });
+            $q->whereRelation('seminar', 'semester', $semester);
         }])->paginate(5);
 
         return new LecturerClassificationCollection($lecturers);
