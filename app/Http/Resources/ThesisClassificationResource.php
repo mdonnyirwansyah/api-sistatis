@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Carbon\Carbon;
 
-class StudentResource extends JsonResource
+class ThesisClassificationResource extends JsonResource
 {
     public function toArray($request)
     {
@@ -14,16 +14,10 @@ class StudentResource extends JsonResource
         $duration = $start->floatDiffInYears($finish);
 
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'nim' => $this->nim,
-            'phone' => $this->phone,
-            'register_date' => $this->register_date,
             'generation' => $this->generation,
-            'status' => $this->status,
             'gpa' => number_format($this->gpa, 2, '.', ','),
-            'graduate_date' => $this->graduate_date,
-            'duration' => round($duration, 2)
+            'duration' => round($duration, 2),
+            'thesis' => new StudentThesisResource($this->whenLoaded('thesis'))
         ];
     }
 }

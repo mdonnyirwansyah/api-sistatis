@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\Seminar;
 use App\Models\Thesis;
+use Carbon\Carbon;
 
 class SeminarSeeder extends Seeder
 {
@@ -324,6 +325,10 @@ class SeminarSeeder extends Seeder
                     ]);
                     $thesis->update([
                         'finish_date' => $seminar['date']
+                    ]);
+                    $thesis->student->update([
+                        'status' => 'Lulus',
+                        'graduate_date' => Carbon::parse($seminar['date'])->addDays(7)
                     ]);
                 }
             });

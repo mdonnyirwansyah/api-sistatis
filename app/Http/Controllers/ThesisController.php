@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ThesisCollection;
 use App\Http\Resources\ThesisResource;
+use App\Http\Resources\ThesisClassificationCollection;
 use App\Http\Requests\ThesisRequest;
 use App\Imports\ThesisImport;
 use App\Models\Student;
@@ -244,8 +245,8 @@ class ThesisController extends Controller
 
     public function classification()
     {
-        $theses = Thesis::with('student', 'field')->whereNotNull('finish_date')->get();
+        $theses = Student::with('thesis')->where('status', 'Lulus')->whereNotNull('graduate_date')->get();
 
-        return new ThesisCollection($theses);
+        return new ThesisClassificationCollection($theses);
     }
 }
