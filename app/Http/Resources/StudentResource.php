@@ -23,7 +23,8 @@ class StudentResource extends JsonResource
             'status' => $this->status,
             'gpa' => number_format($this->gpa, 2, '.', ','),
             'graduate_date' => $this->graduate_date,
-            'duration' => round($duration, 2)
+            'study_duration' => round($duration, 2),
+            'thesis' => new ThesisResource($this->whenLoaded('thesis'))
         ];
     }
 }

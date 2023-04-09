@@ -206,7 +206,6 @@ class ThesisSeeder extends Seeder
                     'title' => $thesis['thesis']['title'],
                     'field_id' => $thesis['thesis']['field_id'],
                     'semester' => $thesis['thesis']['semester']
-
                 ]);
 
                 $created->lecturers()->sync($thesis['thesis']['supervisors']);

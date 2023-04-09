@@ -14,6 +14,19 @@ class Student extends Model
 
     protected $guarded = [];
 
+    public function getStatusAttribute($value)
+    {
+        switch ($value) {
+            case 1:
+                return 'Lulus';
+                break;
+
+            default:
+                return 'Belum Lulus';
+                break;
+        }
+    }
+
     public function thesis()
     {
         return $this->hasOne(Thesis::class);

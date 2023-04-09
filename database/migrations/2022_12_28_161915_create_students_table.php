@@ -20,9 +20,9 @@ class CreateStudentsTable extends Migration
             $table->string('phone');
             $table->date('register_date');
             $table->year('generation');
-            $table->enum('status', ['Belum Lulus', 'Lulus'])->default('Belum Lulus');
+            $table->integer('status')->default(0);
             $table->date('graduate_date')->nullable();
-            $table->float('gpa', 3, 2);
+            $table->float('gpa', 3, 2)->default(0);
             $table->timestamps();
         });
     }

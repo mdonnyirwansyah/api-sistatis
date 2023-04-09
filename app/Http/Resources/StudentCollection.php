@@ -10,7 +10,7 @@ class StudentCollection extends ResourceCollection
     {
         return [
             'data' => StudentResource::collection($this->collection),
-            'code'=> '200',
+            'code'=> 200,
             'status'=> 'OK',
             'message' => 'All student data'
         ];

@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ThesisCollection;
 use App\Http\Resources\ThesisResource;
 use App\Http\Resources\ThesisClassificationCollection;
-use App\Http\Requests\ThesisRequest;
+use App\Http\Requests\ThesisStoreRequest;
+use App\Http\Requests\ThesisUpdateRequest;
+use App\Http\Resources\StudentResource;
+use App\Http\Resources\StudentCollection;
 use App\Imports\ThesisImport;
 use App\Models\Student;
 use App\Models\Thesis;
+use App\Services\ThesisService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,134 +25,37 @@ class ThesisController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->field_id && $request->status) {
-            $theses = Thesis::where('status', $request->status)->where('field_id', $request->field_id)->with('student', 'field')
-                ->orderBy('register_date', 'DESC')
-                ->paginate(5);
-        } else {
-            $theses = Thesis::with('student', 'field')
-                ->orderBy('register_date', 'DESC')
-                ->paginate(5);
-        }
-
-        return new ThesisCollection($theses);
+        return new StudentCollection(ThesisService::getAll($request));
     }
 
-    public function LecturerFilter(Request $request)
+    public function filter(Request $request)
     {
-        if ($request->lecturer_status == 'Pembimbing 1' || $request->lecturer_status == 'Pembimbing 2') {
-            $theses = Thesis::with('student')
-            ->whereHas('lecturers', function ($q) use ($request) {
-                $q->where('id', $request->lecturer_id)->where('lecturerables.status', $request->lecturer_status);
-            })
-            ->whereRelation('student', 'status', $request->student_status)
-            ->orderBy('register_date', 'DESC')
-            ->paginate(5);
-        } else {
-            $theses = Thesis::with(['student', 'field'])
-            ->whereHas('seminars.lecturers', function ($q) use ($request) {
-                $q->where('id', $request->lecturer_id);
-            })
-            ->whereRelation('student', 'status', $request->student_status)
-            ->orderBy('register_date', 'DESC')
-            ->paginate(5);
-        }
-
-        return new ThesisCollection($theses);
+        return new StudentCollection(ThesisService::getByLecturer($request));
     }
 
-    public function store(ThesisRequest $request)
+    public function classification()
     {
-        DB::transaction(function() use($request) {
-            $supervisors = [];
-            $supervisors[0] = [
-                'lecturer_id' => $request->supervisor_1,
-                'status' => 'Pembimbing 1'
-            ];
-            $supervisors[1] = [
-                'lecturer_id' => $request->supervisor_2,
-                'status' => 'Pembimbing 2'
-            ];
+        return new ThesisClassificationCollection(ThesisService::getClassification());
+    }
 
-            $student = Student::create([
-                'name' => $request->name,
-                'nim' => $request->nim,
-                'phone' => $request->phone,
-                'register_date' => Str::padLeft(Str::substr($request->nim, 0, 2), 4, '20'). '-' .Str::substr($request->nim, 2, 2). '-01',
-                'generation' => Str::padLeft(Str::substr($request->nim, 0, 2), 4, '20')
-            ]);
-
-            $thesis = Thesis::create([
-                'student_id' => $student->id,
-                'register_date' => $request->register_date,
-                'title' => $request->title,
-                'field_id' => $request->field,
-                'semester' => $request->semester,
-            ]);
-
-            $thesis->lecturers()->sync($supervisors);
-        });
-
-        $response = [
-            'data' => [],
-            'code' => '201',
-            'status' => 'Created',
-            'message' => 'Data berhasil ditambah'
-        ];
-
-        return response()->json($response, 201);
+    public function store(ThesisStoreRequest $request)
+    {
+        return ThesisService::create($request);
     }
 
     public function show($id)
     {
-        $thesis = Thesis::where('id', $id)->with([
-            'field',
-            'lecturers' => function ($q) {
-                $q->orderBy('pivot_status', 'asc');
-            },
-            'student',
-            'seminars',
-            'seminars.location',
-            'seminars.lecturers' => function ($q) {
-                $q->orderBy('pivot_status', 'asc');
-            },
-            'seminars.chiefOfExaminer',
-            'seminars.chiefOfExaminer.lecturer'
-        ])
-        ->firstOrFail();
-
-        return (new ThesisResource($thesis))->additional([
+        return (new StudentResource(ThesisService::getById($id)))->additional([
             'data' => [],
-            'code' => '200',
+            'code' => 200,
             'status' => 'OK',
             'message' => 'Thesis data by id'
         ]);
     }
 
-    public function showByNim(Request $request)
+    public function showByNim($nim)
     {
-        $thesis = Thesis::with([
-            'field',
-            'lecturers',
-            'student',
-        ])
-        ->whereRelation('student', 'nim', $request->nim)
-        ->first();
-
-        if (!$thesis) {
-            $data = [];
-
-            $response = [
-                'data' => $data,
-                'code' => '404',
-                'status' => 'Not Found',
-                'message' => 'Data tidak ditemukan'
-            ];
-
-            return response()->json($response, 404);
-        }
-
-        return (new ThesisResource($thesis))->additional([
+        return (new StudentResource(ThesisService::getByNim($nim)))->additional([
             'data' => [],
             'code' => '200',
             'status' => 'OK',
@@ -156,62 +63,14 @@ class ThesisController extends Controller
         ]);
     }
 
-    public function update(ThesisRequest $request, Thesis $thesis)
+    public function update(ThesisUpdateRequest $request, $id)
     {
-        DB::transaction(function() use($request, $thesis) {
-            $supervisors = [];
-            $supervisors[0] = [
-                'lecturer_id' => $request->supervisor_1,
-                'status' => 'Pembimbing 1'
-            ];
-            $supervisors[1] = [
-                'lecturer_id' => $request->supervisor_2,
-                'status' => 'Pembimbing 2'
-            ];
-
-            $student = Student::find($thesis->student_id);
-
-            $student->update([
-                'name' => $request->name,
-                'nim' => $request->nim,
-                'phone' => $request->phone,
-                'register_date' => Str::padLeft(Str::substr($request->nim, 0, 2), 4, '20'). '-' .Str::substr($request->nim, 2, 2). '-01',
-                'generation' => Str::padLeft(Str::substr($request->nim, 0, 2), 4, '20'),
-                'status' => $request->status,
-            ]);
-
-            $thesis->update([
-                'register_date' => $request->register_date,
-                'title' => $request->title,
-                'field_id' => $request->field
-            ]);
-
-            $thesis->lecturers()->sync($supervisors);
-        });
-
-        $response = [
-            'data' => [],
-            'code' => '200',
-            'status' => 'OK',
-            'message' => 'Data berhasil diubah'
-        ];
-
-        return response()->json($response, 200);
+        return ThesisService::update($request, $id);
     }
 
-    public function destroy(Thesis $thesis)
+    public function destroy($id)
     {
-        $student = Student::find($thesis->student_id);
-        $student->delete();
-
-        $response = [
-            'data' => [],
-            'code' => '200',
-            'status' => 'OK',
-            'message' => 'Data berhasil dihapus'
-        ];
-
-        return response()->json($response, 200);
+        return ThesisService::delete($id);
     }
 
     public function import(Request $request)
@@ -223,7 +82,7 @@ class ThesisController extends Controller
         $file = $request->file('file');
 
         if($validator->fails()) {
-            return response()->json($validator->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
+            return response()->json($validator->errors(), 422);
         }
 
         try {
@@ -241,12 +100,5 @@ class ThesisController extends Controller
             $failures = $e->failures();
             return response()->json($failures, 422);
         }
-    }
-
-    public function classification()
-    {
-        $theses = Student::with('thesis')->where('status', 'Lulus')->whereNotNull('graduate_date')->get();
-
-        return new ThesisClassificationCollection($theses);
     }
 }

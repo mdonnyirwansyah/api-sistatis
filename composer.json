@@ -13,7 +13,6 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "maatwebsite/excel": "^3.1",
-        "rakutentech/laravel-request-docs": "^2.12",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "tymon/jwt-auth": "^1.0"
     },

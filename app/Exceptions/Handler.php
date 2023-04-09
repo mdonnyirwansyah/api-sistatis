@@ -44,7 +44,7 @@ class Handler extends ExceptionHandler
             if ($request->is('api/*')) {
                 return response()->json([
                     'data' => [],
-                    'code' => '404',
+                    'code' => 404,
                     'status' => 'NOT FOUND',
                     'message' => 'URL tidak ditemukan'
                 ], 404);
@@ -55,10 +55,10 @@ class Handler extends ExceptionHandler
     protected function invalidJson($request, ValidationException $exception)
     {
         $response = [
-            'data'=> [$exception->errors()],
-            'code'=> '422',
+            'data'=> [],
+            'code'=> 422,
             'status'=> 'Unprocessable Content',
-            'message' => 'Data form tidak valid'
+            'message' => $exception->errors()
         ];
 
         return response()->json($response, $exception->status);

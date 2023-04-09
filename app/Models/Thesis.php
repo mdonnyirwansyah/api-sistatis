@@ -13,6 +13,27 @@ class Thesis extends Model
 
     protected $guarded = [];
 
+    public function getStatusAttribute($value)
+    {
+        switch ($value) {
+            case 3:
+                return 'Sidang Tugas Akhir';
+                break;
+
+            case 2:
+                return 'Seminar Hasil Tugas Akhir';
+                break;
+
+            case 1:
+                return 'Seminar Proposal Tugas Akhir';
+                break;
+
+            default:
+                return 'Pendaftaran Tugas Akhir';
+                break;
+        }
+    }
+
     public function student()
     {
         return $this->belongsTo(Student::class);

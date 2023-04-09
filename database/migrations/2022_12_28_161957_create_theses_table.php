@@ -21,7 +21,7 @@ class CreateThesesTable extends Migration
             $table->foreignId('field_id')->nullable()->constrained('fields', 'id')->onUpdate('cascade')->onDelete('cascade');
             $table->string('semester');
             $table->date('finish_date')->nullable();
-            $table->enum('status', ['Pendaftaran Tugas Akhir', 'Seminar Proposal Tugas Akhir', 'Seminar Hasil Tugas Akhir', 'Sidang Tugas Akhir'])->default('Pendaftaran Tugas Akhir');
+            $table->integer('status')->default(0);
             $table->timestamps();
         });
     }

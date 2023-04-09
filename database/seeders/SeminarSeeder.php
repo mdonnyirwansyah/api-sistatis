@@ -315,8 +315,29 @@ class SeminarSeeder extends Seeder
                 $created->lecturers()->sync($seminar['examiners']);
 
                 $thesis = Thesis::find($seminar['thesis_id']);
+
+                $status;
+
+                switch ($seminar['name']) {
+                    case 'Sidang Tugas Akhir':
+                        $status = 3;
+                        break;
+
+                    case 'Seminar Hasil Tugas Akhir':
+                        $status = 2;
+                        break;
+
+                    case 'Seminar Proposal Tugas Akhir':
+                        $status = 1;
+                        break;
+
+                    default:
+                        $status = 0;
+                        break;
+                }
+
                 $thesis->update([
-                    'status' => $seminar['name']
+                    'status' => $status
                 ]);
 
                 if ($seminar['name'] == 'Sidang Tugas Akhir') {
@@ -327,7 +348,7 @@ class SeminarSeeder extends Seeder
                         'finish_date' => $seminar['date']
                     ]);
                     $thesis->student->update([
-                        'status' => 'Lulus',
+                        'status' => 1,
                         'graduate_date' => Carbon::parse($seminar['date'])->addDays(7)
                     ]);
                 }

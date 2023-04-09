@@ -6,15 +6,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:api', ['except' => ['login']]);
-    }
-
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -24,25 +18,27 @@ class AuthController extends Controller
 
         if($validator->fails()) {
             $errors = $validator->errors();
+
             $response = [
-                'data' => $errors,
-                'code' => '422',
+                'data' => [],
+                'code' => 422,
                 'status' => 'Unprocessable Content',
-                'message' => 'Data form tidak valid'
+                'message' => $errors
             ];
-            return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
+
+            return response()->json($response, 422);
         }
 
         $credentials = request(['email', 'password']);
 
         if (! $token = auth()->attempt($credentials)) {
             $response = [
-                'data'=> ['failed' => 'Identitas tersebut tidak cocok dengan data kami.'],
-                'code'=> '401',
+                'data'=> [],
+                'code'=> 401,
                 'status'=> 'Unauthorized',
-                'message' => 'Data form tidak valid'
+                'message' => 'Identitas tersebut tidak cocok dengan data kami.'
             ];
-            return response()->json($response, Response::HTTP_UNAUTHORIZED);
+            return response()->json($response, 401);
         }
 
         $user = [
@@ -56,16 +52,17 @@ class AuthController extends Controller
 
         $response = [
             'data'=> $this->respondWithToken($token)->original,
-            'code'=> '200',
+            'code'=> 200,
             'status'=> 'OK',
             'message' => 'Login berhasil'
         ];
-        return response()->json($response, Response::HTTP_OK)->withCookie($cookie);
+        return response()->json($response, 200)->withCookie($cookie);
     }
 
     public function me()
     {
         $user = auth()->user();
+
         $data = [
             'id' => $user->id,
             'role' => $user->role->name,
@@ -75,16 +72,18 @@ class AuthController extends Controller
 
         $response = [
             'data'=> $data,
-            'code'=> '200',
+            'code'=> 200,
             'status'=> 'OK',
             'message' => 'Data user by login'
         ];
-        return response()->json($response, Response::HTTP_OK);
+
+        return response()->json($response, 200);
     }
 
     public function logout()
     {
         auth()->logout();
+
         $cookie = \Cookie::forget('access_token');
 
         return response()->json(['message' => 'Successfully logged out'])->withCookie($cookie);
@@ -115,7 +114,7 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 120
+            'expires_in' => auth()->factory()->getTTL() * 240
         ]);
     }
 }
