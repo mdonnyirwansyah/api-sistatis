@@ -4,7 +4,6 @@ namespace App\Services;
 use App\Http\Resources\StudentCollection;
 use App\Http\Resources\StudentResource;
 use App\Models\Student;
-use App\Models\Thesis;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -39,7 +38,7 @@ class ThesisService
                     $query->where('id', $request->lecturer_id)->where('lecturerables.status', $request->lecturer_status);
                 })
                 ->where('status', $request->student_status)
-                ->whereHas('thesis', function ($query) {
+                ->whereHas('thesis', function (Builder $query) {
                     $query->orderBy('register_date', 'DESC');
                 })
                 ->paginate(5);
@@ -49,7 +48,7 @@ class ThesisService
                     $query->where('id', $request->lecturer_id);
                 })
                 ->where('status', $request->student_status)
-                ->whereHas('thesis', function ($query) {
+                ->whereHas('thesis', function (Builder $query) {
                     $query->orderBy('register_date', 'DESC');
                 })
                 ->paginate(5);
