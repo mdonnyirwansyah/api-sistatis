@@ -2,22 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ThesisCollection;
-use App\Http\Resources\ThesisResource;
-use App\Http\Resources\ThesisClassificationCollection;
 use App\Http\Requests\ThesisStoreRequest;
 use App\Http\Requests\ThesisUpdateRequest;
+use App\Http\Resources\ThesisClassificationCollection;
 use App\Http\Resources\StudentResource;
 use App\Http\Resources\StudentCollection;
 use App\Imports\ThesisImport;
-use App\Models\Student;
-use App\Models\Thesis;
 use App\Services\ThesisService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 
