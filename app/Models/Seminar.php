@@ -13,6 +13,23 @@ class Seminar extends Model
 
     protected $guarded = [];
 
+    public function getStatusAttribute($value)
+    {
+        switch ($value) {
+            case 2:
+                return 'Validasi';
+                break;
+
+            case 1:
+                return 'Penjadwalan';
+                break;
+
+            default:
+                return 'Pendaftaran';
+                break;
+        }
+    }
+
     public function lecturers()
     {
         return $this->morphToMany(Lecturer::class, 'lecturerable')->withPivot('status');

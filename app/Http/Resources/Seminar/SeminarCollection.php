@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Seminar;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
@@ -12,7 +12,7 @@ class SeminarCollection extends ResourceCollection
             'data' => SeminarResource::collection($this->collection),
             'code'=> '200',
             'status'=> 'OK',
-            'message' => 'All seminar data'
-        ];;
+            'message' => 'All thesis seminar data'
+        ];
     }
 }

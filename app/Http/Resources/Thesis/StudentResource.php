@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Thesis;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use Carbon\Carbon;

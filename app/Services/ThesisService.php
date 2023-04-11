@@ -1,8 +1,8 @@
 <?php
 namespace App\Services;
 
-use App\Http\Resources\StudentCollection;
-use App\Http\Resources\StudentResource;
+use App\Http\Resources\Thesis\StudentCollection;
+use App\Http\Resources\Thesis\StudentResource;
 use App\Models\Student;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -62,7 +62,7 @@ class ThesisService
         return Student::with('thesis')->where('status', 1)->whereNotNull('graduate_date')->paginate(5);
     }
 
-    public static function create($request)
+    public static function register($request)
     {
         try {
             DB::beginTransaction();
@@ -87,10 +87,9 @@ class ThesisService
             DB::commit();
 
             $thesisService = new Self();
-            $created = $thesisService->getById($student->thesis->id);
 
             $response = [
-                'data' => new StudentResource($created),
+                'data' => new StudentResource($thesisService->getById($student->thesis->id)),
                 'code' => 201,
                 'status' => 'Created',
                 'message' => 'Data berhasil ditambah'
@@ -148,11 +147,11 @@ class ThesisService
 
     public static function update($request, $id)
     {
+        $thesisService = new Self();
+        $student = $thesisService->getById($id);
+
         try {
             DB::beginTransaction();
-
-            $student = Student::whereRelation('thesis', 'id', $id)
-            ->firstOrFail();
 
             $student->update([
                 'name' => $request->student['name'],
@@ -177,8 +176,6 @@ class ThesisService
             $student->thesis->lecturers()->sync($request->student['thesis']['supervisors']);
 
             DB::commit();
-
-            $thesisService = new Self();
 
             $response = [
                 'data' => new StudentResource($thesisService->getById($student->thesis->id)),

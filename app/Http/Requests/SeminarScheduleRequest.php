@@ -14,18 +14,18 @@ class SeminarScheduleRequest extends FormRequest
     public function rules()
     {
         return [
-            'date' => 'required',
-            'time' => 'required',
-            'location' => 'required'
+            'seminar.date' => 'required|date_format:Y-m-d',
+            'seminar.time' => 'required|date_format:H:i',
+            'seminar.location_id' => 'required|numeric',
         ];
     }
 
     public function attributes()
     {
         return [
-            'date' => 'tanggal',
-            'time' => 'jam',
-            'location' => 'lokasi'
+            'seminar.date' => 'tanggal seminar',
+            'seminar.time' => 'jam seminar',
+            'seminar.location' => 'lokasi seminar',
         ];
     }
 }

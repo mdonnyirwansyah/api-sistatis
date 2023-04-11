@@ -47,21 +47,21 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('filter', 'filter');
         Route::get('nim/{nim}', 'showByNim');
         Route::get('{id}', 'show');
-        Route::post('', 'store');
+        Route::post('register', 'register');
         Route::put('{id}', 'update');
         Route::delete('{id}', 'destroy');
         Route::post('import', 'import');
     });
     Route::prefix('seminar')->controller(SeminarController::class)->group(function () {
         Route::get('', 'index');
-        Route::post('', 'store');
+        Route::post('register', 'register');
         Route::get('{id}', 'show');
-        Route::put('{seminar}', 'update');
-        Route::put('schedule/{seminar}', 'scheduleUpdate');
-        Route::put('validate/{seminar}', 'validateUpdate');
-        Route::delete('{seminar}', 'destroy');
-        Route::get('undangan/{seminar}', 'undangan');
-        Route::get('berita-acara/{seminar}', 'beritaAcara');
+        Route::put('{id}', 'update');
+        Route::put('schedule/{id}', 'schedule');
+        Route::put('validate/{id}', 'validated');
+        Route::delete('{id}', 'destroy');
+        Route::get('undangan/{id}', 'undangan');
+        Route::get('berita-acara/{id}', 'beritaAcara');
     });
     Route::prefix('semester')->controller(SemesterController::class)->group(function () {
         Route::get('', 'index');

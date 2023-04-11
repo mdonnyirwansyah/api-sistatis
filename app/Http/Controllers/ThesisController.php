@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ThesisStoreRequest;
+use App\Http\Requests\ThesisRegisterRequest;
 use App\Http\Requests\ThesisUpdateRequest;
 use App\Http\Resources\ThesisClassificationCollection;
-use App\Http\Resources\StudentResource;
-use App\Http\Resources\StudentCollection;
+use App\Http\Resources\Thesis\StudentResource;
+use App\Http\Resources\Thesis\StudentCollection;
 use App\Imports\ThesisImport;
 use App\Services\ThesisService;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
@@ -32,9 +31,9 @@ class ThesisController extends Controller
         return new ThesisClassificationCollection(ThesisService::getClassification());
     }
 
-    public function store(ThesisStoreRequest $request)
+    public function register(ThesisRegisterRequest $request)
     {
-        return ThesisService::create($request);
+        return ThesisService::register($request);
     }
 
     public function show($id)

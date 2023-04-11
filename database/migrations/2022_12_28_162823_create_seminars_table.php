@@ -17,12 +17,12 @@ class CreateSeminarsTable extends Migration
             $table->id();
             $table->date('register_date');
             $table->foreignId('thesis_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->enum('name', ['Seminar Proposal Tugas Akhir', 'Seminar Hasil Tugas Akhir', 'Sidang Tugas Akhir']);
+            $table->enum('type', ['Seminar Proposal Tugas Akhir', 'Seminar Hasil Tugas Akhir', 'Sidang Tugas Akhir']);
             $table->date('date')->nullable();
             $table->time('time')->nullable();
             $table->foreignId('location_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('semester');
-            $table->enum('status', ['Pendaftaran', 'Penjadwalan', 'Validasi'])->default('Pendaftaran');
+            $table->integer('status')->default(0);
             $table->date('validate_date')->nullable();
             $table->string('number_of_letter')->nullable();
             $table->timestamps();

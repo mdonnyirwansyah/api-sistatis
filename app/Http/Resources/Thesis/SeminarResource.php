@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Thesis;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\ChiefOfExaminerResource;
+use App\Http\Resources\LecturerResource;
+use App\Http\Resources\LocationResource;
 
-class ThesisSeminarsResource extends JsonResource
+class SeminarResource extends JsonResource
 {
     public function toArray($request)
     {
@@ -12,7 +15,7 @@ class ThesisSeminarsResource extends JsonResource
             'id' => $this->id,
             'register_date' => $this->register_date,
             'status' => $this->status,
-            'name' => $this->name,
+            'type' => $this->type,
             'date' => $this->date,
             'time' => $this->time,
             'location' => new LocationResource($this->whenLoaded('location')),
