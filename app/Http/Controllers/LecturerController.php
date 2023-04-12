@@ -3,13 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Imports\LecturerImport;
-use App\Models\Lecturer;
-use App\Models\Field;
-use App\Models\Seminar;
-use App\Models\Thesis;
 use App\Http\Resources\LecturerCollection;
 use App\Http\Resources\LecturerResource;
 use App\Http\Resources\LecturerClassificationCollection;
+use App\Services\LecturerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
@@ -20,9 +17,22 @@ class LecturerController extends Controller
 {
     public function index()
     {
-        $lecturers = Lecturer::with('fields')->orderBy('name', 'ASC')->get();
+        return new LecturerCollection(LecturerService::getAll());
+    }
 
-        return new LecturerCollection($lecturers);
+    public function classification(Request $request)
+    {
+        return new LecturerClassificationCollection(LecturerService::getClassification($request));
+    }
+
+    public function show($id)
+    {
+        return (new LecturerResource(LecturerService::getById($id)))->additional([
+            'data' => [],
+            'code' => 200,
+            'status' => 'OK',
+            'message' => 'Lecturer data by id'
+        ]);
     }
 
     public function import(Request $request)
@@ -52,54 +62,5 @@ class LecturerController extends Controller
             $failures = $e->failures();
             return response()->json($failures, Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-    }
-
-    public function getLecturersByField(Request $request)
-    {
-        $field = $request->id;
-        $lecturers = Lecturer::whereHas('fields', function ($query) use ($field) {
-            $query->where('id', $field);
-        })->where('status', 'Aktif')->get();
-
-        return new LecturerCollection($lecturers);
-    }
-
-    public function classification(Request $request)
-    {
-        $theses = collect(Thesis::select('semester')->orderBy('semester', 'DESC')->groupBy('semester')->get());
-        $seminars = collect(Seminar::select('semester')->orderBy('semester', 'DESC')->groupBy('semester')->get());
-        $collection = $theses->merge($seminars);
-        $collection = $collection->unique('semester');
-        $sorted = $collection->sortBy([
-            ['semester', 'desc']
-        ]);
-        $sorted = $sorted->first();
-        $semester = $request->semester ?? $sorted->semester;
-
-        $lecturers = Lecturer::with('fields')->select('id', 'nip', 'name', 'major')->withCount(['supervisors1', 'supervisors2', 'seminars AS examiners_count', 'chiefOfExaminers', 'supervisors1 AS supervisors_1_by_semester_count' => function ($q) use ($semester) {
-            $q->where('semester', $semester);
-        }, 'supervisors2 AS supervisors_2_by_semester_count' => function ($q) use ($semester) {
-            $q->where('semester', $semester);
-        }, 'seminars AS examiners_by_semester_count' => function ($q) use ($semester) {
-            $q->where('semester', $semester);
-        }, 'chiefOfExaminers AS chief_of_examiners_by_semester_count' => function ($q) use ($semester) {
-            $q->whereRelation('seminar', 'semester', $semester);
-        }])->paginate(5);
-
-        return new LecturerClassificationCollection($lecturers);
-    }
-
-    public function show($id)
-    {
-        $lecturer = Lecturer::where('id', $id)->with(['fields' => function ($q) {
-            $q->orderBy('pivot_status', 'asc');
-        }])->firstOrFail();
-
-        return (new LecturerResource($lecturer))->additional([
-            'data' => [],
-            'code' => '200',
-            'status' => 'OK',
-            'message' => 'Lecturer data by id'
-        ]);
     }
 }

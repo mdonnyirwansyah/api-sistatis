@@ -56,81 +56,9 @@ class SeminarController extends Controller
         return SeminarService::delete($id);
     }
 
-    public function undangan(Seminar $seminar)
+    public function undangan($id)
     {
-        if ($seminar->status !== 'Validasi') {
-            $response = [
-                'data' => [],
-                'code' => '422',
-                'status' => 'Unprocessable Content',
-                'message' => 'Data seminar belum divalidasi'
-            ];
-            return response()->json($response, 422);
-        }
-
-        $key = $seminar;
-        $student = [
-            'name' => $key->thesis->student->name,
-            'nim' => $key->thesis->student->nim,
-            'phone' => $key->thesis->student->phone
-        ];
-        $lecturers = [];
-
-        foreach ($key->thesis->lecturers as $supervisor) {
-            $add = [
-                'name' => $supervisor->name
-            ];
-            array_push($lecturers, $add);
-        }
-
-        $thesis = [
-            'title' => $key->thesis->title
-        ];
-
-        foreach ($key->lecturers as $examiner) {
-            $add = [
-                'name' => $examiner->name,
-            ];
-            array_push($lecturers, $add);
-        }
-
-        if ($key->chiefOfExaminer) {
-            $chiefOfExaminer = [
-                'name' => $key->chiefOfExaminer->lecturer->name
-            ];
-
-            array_unshift($lecturers, $chiefOfExaminer);
-        }
-
-        $date = Carbon::parse($key->date)->locale('id');
-        $validateDate = Carbon::parse($key->validate_date)->locale('id');
-        $date->settings(['formatFunction' => 'translatedFormat']);
-        $validateDate->settings(['formatFunction' => 'translatedFormat']);
-
-        $seminar = [
-            'validate_date' => $validateDate->format('j F Y'),
-            'name' => $key->name,
-            'date' => $date->format('l, j F Y'),
-            'time' => Carbon::parse($key->time)->format('H:i'),
-            'location' => $key->location->name
-        ];
-
-        $qrcode = base64_encode(QrCode::format('svg')->size(75)->errorCorrection('H')->generate($key->number_of_letter));
-
-        $data = [
-            'id' => $key->id,
-            'number_of_letter' => $key->number_of_letter,
-            'lecturers' => $lecturers,
-            'student' => $student,
-            'thesis' => $thesis,
-            'seminar' => $seminar,
-            'sign' => $qrcode
-        ];
-
-        $pdf = Pdf::loadView('pdf.undangan', compact('data'))
-        ->setPaper('a4')->setOption('margin-top', '1cm')->setOption('margin-bottom', '1cm')->setOption('margin-left', '3cm')->setOption('margin-right', '3cm');
-
-        return $pdf->download('undangan.pdf');
+        return SeminarService::undangan($id);
     }
 
     public function beritaAcara(Seminar $seminar)

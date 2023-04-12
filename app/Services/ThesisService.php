@@ -13,27 +13,25 @@ class ThesisService
     public static function getAll($request)
     {
         if ($request->student_status !== null && $request->field_id !== null) {
-            $theses = Student::with(['thesis', 'thesis.field'])
+            return Student::with(['thesis', 'thesis.field'])
                 ->whereHas('thesis', function (Builder $query) use ($request) {
                     $query->where('field_id', $request->field_id)->orderBy('register_date', 'desc');
                 })
                 ->where('status', $request->student_status)
                 ->paginate(5);
         } else {
-            $theses = Student::with(['thesis', 'thesis.field'])
+            return Student::with(['thesis', 'thesis.field'])
                 ->whereHas('thesis', function (Builder $query) {
                     $query->orderBy('register_date', 'desc');
                 })
                 ->paginate(5);
         }
-
-        return $theses;
     }
 
     public static function getByLecturer($request)
     {
         if ($request->lecturer_status == 'Pembimbing 1' || $request->lecturer_status == 'Pembimbing 2') {
-            $theses = Student::with(['thesis', 'thesis.field'])
+            return Student::with(['thesis', 'thesis.field'])
                 ->whereHas('thesis.lecturers', function (Builder $query) use ($request) {
                     $query->where('id', $request->lecturer_id)->where('lecturerables.status', $request->lecturer_status);
                 })
@@ -43,7 +41,7 @@ class ThesisService
                 })
                 ->paginate(5);
         } else {
-            $theses = Student::with(['thesis', 'thesis.field'])
+            return Student::with(['thesis', 'thesis.field'])
                 ->whereHas('thesis.seminars.lecturers', function (Builder $query) use ($request) {
                     $query->where('id', $request->lecturer_id);
                 })
@@ -53,8 +51,6 @@ class ThesisService
                 })
                 ->paginate(5);
         }
-
-        return $theses;
     }
 
     public static function getClassification()

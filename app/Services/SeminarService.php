@@ -13,7 +13,7 @@ class SeminarService
     public static function getAll($request)
     {
         if ($request->status) {
-            $seminars = Seminar::with([
+            return Seminar::with([
                 'thesis',
                 'thesis.student',
             ])
@@ -22,7 +22,7 @@ class SeminarService
             ->orderBy('register_date', 'DESC')
             ->paginate(5);
         } else {
-            $seminars = Seminar::with([
+            return Seminar::with([
                 'thesis',
                 'thesis.student',
             ])
@@ -30,8 +30,6 @@ class SeminarService
             ->orderBy('date', 'DESC')
             ->paginate(5);
         }
-
-        return $seminars;
     }
 
     public static function register($request)
@@ -121,7 +119,7 @@ class SeminarService
 
     public static function getById($id)
     {
-        $seminar = Seminar::where('id', $id)->with([
+        return Seminar::where('id', $id)->with([
             'thesis',
             'thesis.field',
             'thesis.lecturers' => function ($query) {
@@ -136,8 +134,6 @@ class SeminarService
             'chiefOfExaminer.lecturer'
         ])
         ->firstOrFail();
-
-        return $seminar;
     }
 
     public static function schedule($request, $id)
@@ -268,9 +264,8 @@ class SeminarService
         }
 
         $number = Str::padLeft($counterOfLetter->value, $maxLength, '0');
-        $numberOfLetter = $number .'/'. $type .'/TS-S1/'. $month .'/'. $year;
 
-        return $numberOfLetter;
+        return $number .'/'. $type .'/TS-S1/'. $month .'/'. $year;
     }
 
     public static function validate($id)
@@ -428,5 +423,77 @@ class SeminarService
 
             return response()->json($response);
         }
+    }
+
+    public static function undangan($id)
+    {
+        $seminarService = new Self();
+        $seminar = $seminarService->getById($id);
+
+        if ($seminar->status !== 'Validasi') {
+            $response = [
+                'data' => [],
+                'code' => '422',
+                'status' => 'Unprocessable Content',
+                'message' => 'Data seminar belum divalidasi'
+            ];
+            return response()->json($response, 422);
+        }
+
+        $lecturers = [];
+
+        foreach ($key->thesis->supervisors() as $supervisor) {
+            $add = [
+                'name' => $supervisor->name
+            ];
+            array_push($lecturers, $add);
+        }
+
+        foreach ($seminar->examiners() as $examiner) {
+            $add = [
+                'name' => $examiner->name,
+            ];
+            array_push($lecturers, $add);
+        }
+
+        if ($seminar->chiefOfExaminer) {
+            $chiefOfExaminer = [
+                'name' => $key->chiefOfExaminer->lecturer->name
+            ];
+
+            array_unshift($lecturers, $chiefOfExaminer);
+        }
+
+        $date = Carbon::parse($seminar->date)->locale('id');
+        $validateDate = Carbon::parse($seminar->validate_date)->locale('id');
+        $date->settings(['formatFunction' => 'translatedFormat']);
+        $validateDate->settings(['formatFunction' => 'translatedFormat']);
+        $qrcode = base64_encode(QrCode::format('svg')->size(75)->errorCorrection('H')->generate($seminar->number_of_letter));
+
+        $data = [
+            'id' => $seminar->id,
+            'lecturers' => $lecturers,
+            'student' => [
+                'name' => $seminar->thesis->student->name
+            ],
+            'seminar' => [
+                'validate_date' => $validateDate->format('j F Y'),
+                'type' => $seminar->type,
+                'date' => $date->format('l, j F Y'),
+                'time' => Carbon::parse($key->time)->format('H:i'),
+                'location' => $seminar->location->name
+            ],
+            'sign' => $qrcode
+        ];
+
+        $pdf = Pdf::loadView('pdf.undangan', compact('data'))
+        ->setPaper('a4')->setOption('margin-top', '1cm')->setOption('margin-bottom', '1cm')->setOption('margin-left', '3cm')->setOption('margin-right', '3cm');
+
+        return $pdf->download('undangan.pdf');
+    }
+
+    public static function beritaAcara()
+    {
+        //
     }
 }

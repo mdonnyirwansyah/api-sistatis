@@ -38,7 +38,6 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('', 'index');
         Route::get('classification', 'classification');
         Route::get('{id}', 'show');
-        Route::get('field', 'getLecturersByField');
         Route::post('import', 'import');
     });
     Route::prefix('thesis')->controller(ThesisController::class)->group(function () {
