@@ -4,9 +4,12 @@ namespace App\Services;
 use App\Http\Resources\Seminar\SeminarResource;
 use App\Models\CounterOfLetter;
 use App\Models\Seminar;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use QrCode;
 
 class SeminarService
 {
@@ -433,7 +436,7 @@ class SeminarService
         if ($seminar->status !== 'Validasi') {
             $response = [
                 'data' => [],
-                'code' => '422',
+                'code' => 422,
                 'status' => 'Unprocessable Content',
                 'message' => 'Data seminar belum divalidasi'
             ];
@@ -442,14 +445,14 @@ class SeminarService
 
         $lecturers = [];
 
-        foreach ($key->thesis->supervisors() as $supervisor) {
+        foreach ($seminar->thesis->lecturers as $supervisor) {
             $add = [
                 'name' => $supervisor->name
             ];
             array_push($lecturers, $add);
         }
 
-        foreach ($seminar->examiners() as $examiner) {
+        foreach ($seminar->lecturers as $examiner) {
             $add = [
                 'name' => $examiner->name,
             ];
@@ -458,7 +461,7 @@ class SeminarService
 
         if ($seminar->chiefOfExaminer) {
             $chiefOfExaminer = [
-                'name' => $key->chiefOfExaminer->lecturer->name
+                'name' => $seminar->chiefOfExaminer->lecturer->name
             ];
 
             array_unshift($lecturers, $chiefOfExaminer);
@@ -468,32 +471,114 @@ class SeminarService
         $validateDate = Carbon::parse($seminar->validate_date)->locale('id');
         $date->settings(['formatFunction' => 'translatedFormat']);
         $validateDate->settings(['formatFunction' => 'translatedFormat']);
-        $qrcode = base64_encode(QrCode::format('svg')->size(75)->errorCorrection('H')->generate($seminar->number_of_letter));
+        $qrcode = base64_encode(QrCode::format('svg')
+            ->size(75)
+            ->errorCorrection('H')
+            ->generate($seminar->number_of_letter));
 
         $data = [
             'id' => $seminar->id,
             'lecturers' => $lecturers,
             'student' => [
-                'name' => $seminar->thesis->student->name
+                'name' => $seminar->thesis->student->name,
+                'nim' => $seminar->thesis->student->nim,
+                'phone' => $seminar->thesis->student->phone
+            ],
+            'thesis' => [
+                'title' => $seminar->thesis->title
             ],
             'seminar' => [
                 'validate_date' => $validateDate->format('j F Y'),
                 'type' => $seminar->type,
                 'date' => $date->format('l, j F Y'),
-                'time' => Carbon::parse($key->time)->format('H:i'),
-                'location' => $seminar->location->name
+                'time' => Carbon::parse($seminar->time)->format('H:i'),
+                'location' => $seminar->location->name,
+                'number_of_letter' => $seminar->number_of_letter
             ],
             'sign' => $qrcode
         ];
 
         $pdf = Pdf::loadView('pdf.undangan', compact('data'))
-        ->setPaper('a4')->setOption('margin-top', '1cm')->setOption('margin-bottom', '1cm')->setOption('margin-left', '3cm')->setOption('margin-right', '3cm');
+            ->setPaper('a4')
+            ->setOption('margin-top', '1cm')
+            ->setOption('margin-bottom', '1cm')
+            ->setOption('margin-left', '3cm')
+            ->setOption('margin-right', '3cm');
 
         return $pdf->download('undangan.pdf');
     }
 
-    public static function beritaAcara()
+    public static function beritaAcara($id)
     {
-        //
+        $seminarService = new Self();
+        $seminar = $seminarService->getById($id);
+
+        if ($seminar->status !== 'Validasi') {
+            $response = [
+                'data' => [],
+                'code' => 422,
+                'status' => 'Unprocessable Content',
+                'message' => 'Data seminar belum divalidasi'
+            ];
+            return response()->json($response, 422);
+        }
+
+        switch ($seminar->type) {
+            case 'Sidang Tugas Akhir':
+                $options = 'LULUS / TIDAK LULUS  *)';
+                break;
+
+            case 'Seminar Hasil Tugas Akhir':
+                $options = 'DILANJUTKAN / DIBATALKAN  *) KE PROSES SIDANG TUGAS AKHIR';
+                break;
+
+            default:
+                $options = 'DILANJUTKAN / DIBATALKAN  *) KE PROSES SEMINAR HASIL TUGAS AKHIR';
+                break;
+        }
+
+        $lecturers = [];
+
+        foreach ($seminar->thesis->lecturers as $supervisor) {
+            $add = [
+                'name' => $supervisor->name,
+                'nip' => $supervisor->nip
+            ];
+            array_push($lecturers, $add);
+        }
+
+        $date = Carbon::parse($seminar->date)->locale('id');
+        $date->settings(['formatFunction' => 'translatedFormat']);
+
+        $data = [
+            'lecturers' => $lecturers,
+            'student' => [
+                'name' => $seminar->thesis->student->name,
+                'nim' => $seminar->thesis->student->nim,
+            ],
+            'thesis' => [
+                'title' => $seminar->thesis->title,
+            ],
+            'seminar' => [
+                'status' => $seminar->status,
+                'type' => $seminar->type,
+                'date' => $date->format('j F Y'),
+                'day_string' => $date->format('l'),
+                'day' => $date->format('j'),
+                'month' => $date->format('F'),
+                'year' => $date->format('Y')
+
+            ],
+            'options' => $options
+        ];
+
+        $pdf = Pdf::loadView('pdf.berita-acara', compact('data'))
+            ->setPaper('a4')
+            ->setOption('margin-top', '1cm')
+            ->setOption('margin-bottom', '1cm')
+            ->setOption('margin-left', '3cm')
+            ->setOption('margin-right', '3cm');
+
+        return $pdf->download('berita-acara.pdf');
     }
 }

@@ -64,7 +64,7 @@
                     <td class="header">
                         <h1><b>BERITA ACARA</b></h1>
                         <h2>
-                            <b>{{ $data["seminar"]["name"] }}</b>
+                            <b>{{ $data["seminar"]["type"] }}</b>
                         </h2>
                     </td>
                 </tr>
@@ -77,7 +77,7 @@
                 <tbody>
                     <tr>
                         <td style="text-align: justify">
-                            Pada hari ini, {{ $data["seminar"]["day_string"] }} tanggal {{ DateHelp::dayToString($data["seminar"]["day"]) }} bulan {{ $data["seminar"]["month"] }} tahun {{ DateHelp::yearToString($data["seminar"]["year"]) }}, telah dilaksanakan {{ $data["seminar"]["name"] }} atas nama mahasiswa:
+                            Pada hari ini, {{ $data["seminar"]["day_string"] }} tanggal {{ DateHelp::dayToString($data["seminar"]["day"]) }} bulan {{ $data["seminar"]["month"] }} tahun {{ DateHelp::yearToString($data["seminar"]["year"]) }}, telah dilaksanakan {{ $data["seminar"]["type"] }} atas nama mahasiswa:
                         </td>
                     </tr>
                 </tbody>
@@ -129,7 +129,7 @@
                 <tbody>
                     <tr>
                         <td>
-                            {{ $data["seminar"]["name"] }} ini dibuka oleh: {{ $data['lecturers'][0]['name'] }}
+                            {{ $data["seminar"]["type"] }} ini dibuka oleh: {{ $data['lecturers'][0]['name'] }}
                         </td>
                     </tr>
                     <tr>
@@ -155,7 +155,7 @@
                 <tbody>
                     <tr>
                         <td>
-                            {{ $data["seminar"]["name"] }} ini ditutup pada Jam:_______ dengan hasil / Putusan Seminar adalah sebagai berikut: Mahasiswa tersebut di atas dinyatakan:
+                            {{ $data["seminar"]["type"] }} ini ditutup pada Jam:_______ dengan hasil / Putusan Seminar adalah sebagai berikut: Mahasiswa tersebut di atas dinyatakan:
                         </td>
                     </tr>
                     <tr>
@@ -186,7 +186,7 @@
                     </tr>
                     <tr>
                         <td>
-                            Tim Pembimbing {{ $data["seminar"]["name"] }}
+                            Tim Pembimbing {{ $data["seminar"]["type"] }}
                         </td>
                     </tr>
                 </tbody>

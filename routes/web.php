@@ -15,5 +15,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('seminar')->controller(SeminarController::class)->group(function () {
-    Route::get('berita-acara/{seminar}', 'beritaAcara');
+    Route::get('undangan/{id}', 'undangan');
+    Route::get('berita-acara/{id}', 'beritaAcara');
 });
