@@ -12,18 +12,20 @@ class ThesisService
 {
     public static function getAll($request)
     {
-        if ($request->student_status !== null && $request->field_id !== null) {
+        if ($request->thesis_status !== null && $request->field_id !== null) {
             return Student::with(['thesis', 'thesis.field'])
                 ->whereHas('thesis', function (Builder $query) use ($request) {
-                    $query->where('field_id', $request->field_id)->orderBy('register_date', 'desc');
+                    $query->where('field_id', $request->field_id)
+                        ->where('status', $request->thesis_status);
                 })
-                ->where('status', $request->student_status)
+                ->orderBy('id', 'DESC')
                 ->paginate(5);
         } else {
-            return Student::with(['thesis', 'thesis.field'])
-                ->whereHas('thesis', function (Builder $query) {
-                    $query->orderBy('register_date', 'desc');
-                })
+            return Student::with([
+                    'thesis',
+                    'thesis.field'
+                ])
+                ->orderBy('id', 'DESC')
                 ->paginate(5);
         }
     }
@@ -33,7 +35,8 @@ class ThesisService
         if ($request->lecturer_status == 'Pembimbing 1' || $request->lecturer_status == 'Pembimbing 2') {
             return Student::with(['thesis', 'thesis.field'])
                 ->whereHas('thesis.lecturers', function (Builder $query) use ($request) {
-                    $query->where('id', $request->lecturer_id)->where('lecturerables.status', $request->lecturer_status);
+                    $query->where('id', $request->lecturer_id)
+                        ->where('lecturerables.status', $request->lecturer_status);
                 })
                 ->where('status', $request->student_status)
                 ->whereHas('thesis', function (Builder $query) {
@@ -53,9 +56,23 @@ class ThesisService
         }
     }
 
-    public static function getClassification()
+    public static function getClassification($type = null)
     {
-        return Student::with('thesis')->where('status', 1)->whereNotNull('graduate_date')->paginate(5);
+        switch ($type) {
+            case 'paginate':
+                return Student::with('thesis')
+                    ->where('status', 1)
+                    ->whereNotNull('graduate_date')
+                    ->paginate(5);
+                break;
+
+            default:
+                return Student::with('thesis')
+                    ->where('status', 1)
+                    ->whereNotNull('graduate_date')
+                    ->get();
+                break;
+        }
     }
 
     public static function register($request)
@@ -78,7 +95,9 @@ class ThesisService
                 'semester' => $request->student['thesis']['semester'],
             ]);
 
-            $student->thesis->lecturers()->sync($request->student['thesis']['supervisors']);
+            $student->thesis
+                ->lecturers()
+                ->sync($request->student['thesis']['supervisors']);
 
             DB::commit();
 
@@ -122,8 +141,8 @@ class ThesisService
             'thesis.seminars.chiefOfExaminer',
             'thesis.seminars.chiefOfExaminer.lecturer'
         ])
-        ->whereRelation('thesis', 'id', $id)
-        ->firstOrFail();
+            ->whereRelation('thesis', 'id', $id)
+            ->firstOrFail();
 
         return $thesis;
     }
@@ -169,7 +188,9 @@ class ThesisService
                 'status' => $request->student['thesis']['status'],
             ]);
 
-            $student->thesis->lecturers()->sync($request->student['thesis']['supervisors']);
+            $student->thesis
+                ->lecturers()
+                ->sync($request->student['thesis']['supervisors']);
 
             DB::commit();
 

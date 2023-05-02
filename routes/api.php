@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FieldController;
 use App\Http\Controllers\LecturerController;
@@ -8,7 +9,6 @@ use App\Http\Controllers\ThesisController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\SeminarController;
 use App\Http\Controllers\UserController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -43,6 +43,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::prefix('thesis')->controller(ThesisController::class)->group(function () {
         Route::get('', 'index');
         Route::get('classification', 'classification');
+        Route::get('classification/paginate', 'classificationPaginate');
         Route::get('filter', 'filter');
         Route::get('nim/{nim}', 'showByNim');
         Route::get('{id}', 'show');
@@ -65,7 +66,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::prefix('semester')->controller(SemesterController::class)->group(function () {
         Route::get('', 'index');
     });
-    Route::prefix('user')->controller(UserController::class)->group(function () {
-        Route::put('{user}', 'update');
+    Route::prefix('account')->controller(AccountController::class)->group(function () {
+        Route::put('profile-update', 'profileUpdate');
+        Route::put('password-update', 'passwordUpdate');
     });
 });

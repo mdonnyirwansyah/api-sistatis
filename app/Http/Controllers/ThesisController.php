@@ -31,6 +31,11 @@ class ThesisController extends Controller
         return new ThesisClassificationCollection(ThesisService::getClassification());
     }
 
+    public function classificationPaginate()
+    {
+        return new ThesisClassificationCollection(ThesisService::getClassification('paginate'));
+    }
+
     public function register(ThesisRegisterRequest $request)
     {
         return ThesisService::register($request);

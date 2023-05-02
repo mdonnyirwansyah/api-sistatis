@@ -25,7 +25,7 @@ class SeminarScheduleRequest extends FormRequest
         return [
             'seminar.date' => 'tanggal seminar',
             'seminar.time' => 'jam seminar',
-            'seminar.location' => 'lokasi seminar',
+            'seminar.location_id' => 'lokasi seminar',
         ];
     }
 }

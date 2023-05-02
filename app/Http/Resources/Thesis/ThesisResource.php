@@ -25,6 +25,7 @@ class ThesisResource extends JsonResource
             'status' => $this->status,
             'finish_date' => $this->finish_date,
             'thesis_duration' => round($duration, 2),
+            'semester' => $this->semester,
             'seminars' => SeminarResource::collection($this->whenLoaded('seminars')),
         ];
     }

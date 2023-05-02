@@ -2,76 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Resources\UserResource;
+use App\Http\Requests\LoginRequest;
+use App\Services\AuthService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
-
-        if($validator->fails()) {
-            $errors = $validator->errors();
-
-            $response = [
-                'data' => [],
-                'code' => 422,
-                'status' => 'Unprocessable Content',
-                'message' => $errors
-            ];
-
-            return response()->json($response, 422);
-        }
-
         $credentials = request(['email', 'password']);
 
-        if (! $token = auth()->attempt($credentials)) {
-            $response = [
-                'data'=> [],
-                'code'=> 401,
-                'status'=> 'Unauthorized',
-                'message' => 'Identitas tersebut tidak cocok dengan data kami.'
-            ];
-            return response()->json($response, 401);
-        }
-
-        $user = [
-            'id' => auth()->user()->id,
-            'role' => auth()->user()->role->name,
-            'name' => auth()->user()->name,
-            'email' => auth()->user()->email
-        ];
-
-        $cookie = $this->getCookie('access_token', $token);
-
-        $response = [
-            'data'=> $this->respondWithToken($token)->original,
-            'code'=> 200,
-            'status'=> 'OK',
-            'message' => 'Login berhasil'
-        ];
-        return response()->json($response, 200)->withCookie($cookie);
+        return AuthService::login($credentials);
     }
 
     public function me()
     {
-        $user = auth()->user();
-
-        $data = [
-            'id' => $user->id,
-            'role' => $user->role->name,
-            'name' => $user->name,
-            'email' => $user->email
-        ];
+        $user = AuthService::getMe();
 
         $response = [
-            'data'=> $data,
+            'data'=> new UserResource($user),
             'code'=> 200,
             'status'=> 'OK',
             'message' => 'Data user by login'
@@ -82,39 +32,11 @@ class AuthController extends Controller
 
     public function logout()
     {
-        auth()->logout();
-
-        $cookie = \Cookie::forget('access_token');
-
-        return response()->json(['message' => 'Successfully logged out'])->withCookie($cookie);
+        return AuthService::logout();
     }
 
     public function refresh()
     {
-        return $this->respondWithToken(auth()->refresh());
-    }
-
-    private function getCookie($name, $token)
-    {
-        return cookie(
-            $name,
-            $token,
-            auth()->factory()->getTTL(),
-            null,
-            null,
-            env('APP_DEBUG') ? false : true,
-            true,
-            false,
-            'Strict'
-        );
-    }
-
-    protected function respondWithToken($token)
-    {
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 240
-        ]);
+        return AuthService::refresh(auth()->refresh());
     }
 }

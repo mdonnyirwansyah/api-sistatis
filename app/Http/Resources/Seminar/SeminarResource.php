@@ -12,6 +12,7 @@ class SeminarResource extends JsonResource
     public function toArray($request)
     {
         return [
+            'id' => $this->id,
             'student' => [
                 'id' => $this->thesis->student->id,
                 'name' => $this->thesis->student->name,
@@ -22,7 +23,6 @@ class SeminarResource extends JsonResource
             ],
             'thesis' => new ThesisResource($this->whenLoaded('thesis')),
             'seminar' => [
-                'id' => $this->id,
                 'register_date' => $this->register_date,
                 'status' => $this->status,
                 'type' => $this->type,

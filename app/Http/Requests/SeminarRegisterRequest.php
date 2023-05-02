@@ -15,7 +15,7 @@ class SeminarRegisterRequest extends FormRequest
     {
         return [
             'student.nim' => 'required|string',
-            'student.semester' => 'required|string',
+            'student.seminar.semester' => 'required|string',
             'student.seminar.register_date' => 'required|date_format:Y-m-d',
             'student.seminar.type' => 'required|string',
             'student.seminar.examiners' => 'required|array|min:3|max:4',
@@ -28,7 +28,7 @@ class SeminarRegisterRequest extends FormRequest
     {
         return [
             'student.nim' => 'nim mahasiswa',
-            'student.semester' => 'semester mahasiswa',
+            'student.seminar.semester' => 'semester seminar',
             'student.seminar.type' => 'jenis seminar',
             'student.seminar.register_date' => 'tanggal daftar seminar',
             'student.seminar.examiners' => 'penguji seminar',

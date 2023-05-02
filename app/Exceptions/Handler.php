@@ -55,10 +55,10 @@ class Handler extends ExceptionHandler
     protected function invalidJson($request, ValidationException $exception)
     {
         $response = [
-            'data'=> [],
+            'data'=> $exception->errors(),
             'code'=> 422,
             'status'=> 'Unprocessable Content',
-            'message' => $exception->errors()
+            'message' => 'Data tidak valid'
         ];
 
         return response()->json($response, $exception->status);

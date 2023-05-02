@@ -15,7 +15,7 @@ class SeminarService
 {
     public static function getAll($request)
     {
-        if ($request->status) {
+        if ($request->status !== null) {
             return Seminar::with([
                 'thesis',
                 'thesis.student',
@@ -30,7 +30,7 @@ class SeminarService
                 'thesis.student',
             ])
             ->where('type', $request->type)
-            ->orderBy('date', 'DESC')
+            ->orderBy('register_date', 'DESC')
             ->paginate(5);
         }
     }
@@ -54,6 +54,36 @@ class SeminarService
             return response()->json($response, 422);
         }
 
+        switch ($request->student['seminar']['type']) {
+            case 'Sidang Tugas Akhir':
+                $lastSeminar = 'Seminar Hasil Tugas Akhir';
+                break;
+
+            case 'Seminar Hasil Tugas Akhir':
+                $lastSeminar = 'Seminar Proposal Tugas Akhir ';
+                break;
+
+            default:
+                $lastSeminar = '-';
+                break;
+        }
+
+        $notValidate = Seminar::where('thesis_id', $student->thesis->id)
+        ->where('type', $lastSeminar)
+        ->where('status', '!=', '2')
+        ->first();
+
+        if ($notValidate) {
+            $response = [
+                'data' => [],
+                'code' => 422,
+                'status' => 'Unprocessable Content',
+                'message' => 'Seminar sebelumnya belum divalidasi'
+            ];
+
+            return response()->json($response, 422);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -61,7 +91,7 @@ class SeminarService
                 'thesis_id' => $student->thesis->id,
                 'type' => $request->student['seminar']['type'],
                 'register_date' => $request->student['seminar']['register_date'],
-                'semester' => $request->student['semester']
+                'semester' => $request->student['seminar']['semester']
             ]);
 
             $examiners = collect($request->student['seminar']['examiners']);
@@ -342,11 +372,11 @@ class SeminarService
                 'status' => $request->seminar['status']
             ]);
 
-            $examiners = collect($request->student['seminar']['examiners']);
+            $examiners = collect($request->seminar['examiners']);
 
             $seminar->lecturers()->sync($examiners->whereIn('status', ['Penguji 1', 'Penguji 2', 'Penguji 3']));
 
-            if ($examiners->where('status', 'Ketua Sidang') && $request->type === 'Sidang Tugas Akhir') {
+            if ($examiners->where('status', 'Ketua Sidang') && $seminar->type === 'Sidang Tugas Akhir') {
                 $seminar->chiefOfExaminer()->update([
                     'lecturer_id' => $examiner->where('status', 'Ketua Sidang')->lecturer_id
                 ]);
@@ -372,7 +402,7 @@ class SeminarService
                 'message' => $e->getMessage()
             ];
 
-            return response()->json($response);
+            return response()->json($response, 500);
         }
     }
 

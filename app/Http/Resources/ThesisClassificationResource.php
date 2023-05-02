@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Resources\Thesis\ThesisResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Carbon\Carbon;
 
@@ -16,8 +17,8 @@ class ThesisClassificationResource extends JsonResource
         return [
             'generation' => $this->generation,
             'gpa' => number_format($this->gpa, 2, '.', ','),
-            'duration' => round($duration, 2),
-            'thesis' => new StudentThesisResource($this->whenLoaded('thesis'))
+            'study_duration' => round($duration, 2),
+            'thesis' => new ThesisResource($this->whenLoaded('thesis'))
         ];
     }
 }
