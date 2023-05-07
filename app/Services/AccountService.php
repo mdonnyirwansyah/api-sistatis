@@ -3,6 +3,7 @@ namespace App\Services;
 
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class AccountService
 {
@@ -45,9 +46,23 @@ class AccountService
                 'password' => Hash::make($request->new_password)
             ])->save();
 
-            return response()->json(['ok' => 'Data berhasil diubah!']);
+            $response = [
+                'data'=> new UserResource($account),
+                'code'=> 200,
+                'status'=> 'OK',
+                'message' => 'Data berhasil diubah!'
+            ];
+
+            return response()->json($response, 200);
         } catch (\Exception $e) {
-            return response()->json(['failed' => $e->getMessage()]);
+            $response = [
+                'data' => [],
+                'code' => 500,
+                'status' => 'Internal Server Error',
+                'message' => $e->getMessage()
+            ];
+
+            return response()->json($response, 500);
         }
     }
 }
