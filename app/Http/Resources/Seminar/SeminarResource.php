@@ -18,6 +18,7 @@ class SeminarResource extends JsonResource
                 'name' => $this->thesis->student->name,
                 'nim' => $this->thesis->student->nim,
                 'phone' => $this->thesis->student->phone,
+                'status' => $this->thesis->student->status,
                 'register_date' => $this->thesis->student->register_date,
                 'generation' => $this->thesis->student->generation,
             ],
